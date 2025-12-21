@@ -46,7 +46,7 @@
                     <div></div>
                     <div class="flex-center">
                         <button class="bg-secondary">Clear Queued Transition</button>
-                        <button class="bg-primary">Submit Transition</button>
+                        <button class="bg-primary" onclick="submitSceneRequest()">Submit Transition</button>
 
                     </div>
                 </div>
@@ -150,7 +150,7 @@
         <div style="flex:1">
             <div class="flex-center" style="gap:5px;justify-content: start;">
                 <button class="bg-secondary small-button material-symbols-outlined show-preview" onclick="chooseCameraForManagement('INSERT_ID')">table_eye</button>
-                <button class="bg-secondary small-button material-symbols-outlined">open_in_new</button>
+                <button class="bg-secondary small-button material-symbols-outlined" onclick="openCameraPreview('INSERT_ID')">open_in_new</button>
                 <button class="bg-error small-button material-symbols-outlined" onclick="deleteCamera('INSERT_ID')">delete</button>
             </div>
         </div>
@@ -161,7 +161,13 @@
             "Present": "active",
             "BeRightBack": "brb",
             "TwoCamera": "two-camera",
-            "StartingSoon": "starting-soon"
+            "StartingSoon": "starting-soon",
+            // two-way
+            "passive": "Passive",
+            "active": "Present",
+            "brb": "BeRightBack",
+            "two-camera": "TwoCamera",
+            "starting-soon": "StartingSoon"
         };
 
         let dataMapping = {
@@ -176,6 +182,7 @@
 
                 let camIndex = cameras.findIndex(cam => cam.id === cameraManagement.selectedId);
                 cameras[camIndex].type = selectedOptions["cameraSourceType"]["selected"];
+                updateAllCameraLists();
             },
             "livePreview": () => {
                 // a combo between the selected camera id and the livePreview option
@@ -211,6 +218,8 @@
                 priority: "selected"
             },
         }
+
+        let activeSceneRequest = {};
 
         let activeSceneOptionsContainer = document.getElementsByName("scene-options-active")[0];
         let queuedSceneOptionsContainer = document.getElementsByName("scene-options-queued")[0];
@@ -476,6 +485,13 @@
             });
         }
 
+        function openCameraPreview(id){
+            let camName = cameras.find(cam => cam.id === id);
+            if(!camName) return;
+
+            window.open(camName.url, '_blank');
+        }
+
         function changeStatusIndicator(indicatorElementName, isConnected) {
             let indicatorElement = document.getElementsByName(indicatorElementName)[0];
             if (isConnected) {
@@ -512,6 +528,9 @@
 
             let currentScene = config.obs_state.currentScene;
             reactToDataChange("obs_state", "currentScene", currentScene);
+
+            let activeSceneRequestConfig = config.camera.activeSceneRequest || {};
+            reactToDataChange("camera", "activeSceneRequest", activeSceneRequestConfig);
         });
 
         function reactToDataChange(group, key, value){
@@ -522,6 +541,11 @@
                     if(mappedValue == null) return;
                     multiButtonSelect("curScene", mappedValue, "before");
                     setupSceneOptions("before");
+                }
+            }
+            else if(group == "camera"){
+                if(key == "activeSceneRequest"){
+                    activeSceneRequest = value;
                 }
             }
         }
@@ -712,6 +736,38 @@
             });
 
             updateAllCameraLists();
+        }
+
+        function submitSceneRequest(){
+            let requestedScene = selectedOptions["curScene"]["selected"];
+            let mappedScene = sceneNameMapping[requestedScene] || null;
+            if(mappedScene == null) {
+                selectedOptions["curScene"]["selected"] = selectedOptions["curScene"]["before"];
+            };
+
+            // we also need the camera id's from the scene options
+            let sceneOptionsContainer = document.getElementsByName("scene-options-queued")[0];
+
+            // if the selected scene is the same as the before scene, then get from active
+            if(selectedOptions["curScene"]["before"] === selectedOptions["curScene"]["selected"]){
+                sceneOptionsContainer = document.getElementsByName("scene-options-active")[0];
+            }
+
+            let cameraSelects = sceneOptionsContainer.getElementsByClassName("camera_list");
+
+            let camerasSelected = [];
+            for(let i = 0; i < cameraSelects.length; i++){
+                let camSelect = cameraSelects[i];
+                let camId = camSelect.value;
+                camerasSelected.push(camId);
+            }
+
+            let sceneRequest = {
+                scene: mappedScene,
+                cameras: camerasSelected
+            }
+
+            socket.emit("changeData", "camera", "sceneRequest", sceneRequest);
         }
 
         // socket.on("dataUpdated", (group, key, value) => {

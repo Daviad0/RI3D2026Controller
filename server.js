@@ -58,7 +58,9 @@ let globalConfig = {
         },
         configured: [],
         preview: "images",
-        manager: null
+        manager: null,
+        activeSceneRequest: {},
+        sceneRequest: {}
     },
     obs_state: {
         scenesToTarget: [ // set MANUALLY - mimiced in obs-connection.js
@@ -69,7 +71,28 @@ let globalConfig = {
             "StartingSoon"
         ],
         currentScene: null,
-        cache: {}
+        cache: {},
+        sourceCameraNames: { // keep track of which sources are mapped to which cameras
+            "Passive": [
+                "RI3D_MEDIA_1",
+                "RI3D_WEB_1"
+            ],
+            "Present": [
+                "RI3D_MEDIA_1",
+                "RI3D_WEB_1"
+            ],
+            "BeRightBack": [
+                "RI3D_MEDIA_1",
+                "RI3D_WEB_1"
+            ],
+            "TwoCamera": [
+                "RI3D_MEDIA_1",
+                "RI3D_MEDIA_2",
+                "RI3D_WEB_1",
+                "RI3D_WEB_2"
+            ],
+            "StartingSoon": []
+        }
     },
     scene_index_mapping: { // automatically filled on OBS connection
 

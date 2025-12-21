@@ -1,7 +1,8 @@
 const { io } = require('socket.io-client');
 const OBSWebSocket = require('obs-websocket-js').OBSWebSocket;
 
-const connectToHost = "https://ccr.students.mtu.edu";
+// const connectToHost = "https://ccr.students.mtu.edu";
+const connectToHost = "http://localhost:3000";
 const connectToPath = "/ri3d26/socket.io/";
 
 const obsInstance = new OBSWebSocket();

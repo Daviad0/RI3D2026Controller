@@ -1,5 +1,5 @@
 {
-  "requestedStage": "panel-open-muted-muted",
-  "currentStage": "panel-open-muted",
+  "requestedStage": null,
+  "currentStage": "panel-closed-muted",
   "preview": "names"
 }

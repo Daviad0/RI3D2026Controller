@@ -121,7 +121,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.13.0/lottie.min.js" type="text/javascript"></script>
 <script>
 
-    let socket = io();
+    const socket = io(window.location.host, {
+        path: "/ri3d26/socket.io"
+    });
 
     var stages = ["panel-open-muted", "panel-large", "panel-open", "panel-closed", "panel-closed-muted", "panel-enlarged"];
 
@@ -604,7 +606,7 @@
             name: "Camera Transition"
         });
 
-        cameraTransition.setSpeed(4);
+        cameraTransition.setSpeed(1.5);
         cameraTransition.addEventListener("complete", function(){
             console.log("Camera transition complete");
             // mark transition as complete
