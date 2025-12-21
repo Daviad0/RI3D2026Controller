@@ -3,7 +3,7 @@
         <title>Setup Stream</title>
         <link rel="stylesheet" href="main.css"/>
         <!-- socket.io script -->
-        <script src="/socket.io/socket.io.js"></script>
+        <script src="/ri3d26/socket.io/socket.io.js"></script>
     </head>
     <body class="designed-background">
         <div class="center-module">
@@ -48,7 +48,9 @@
 
         let validObsUrl = "";
 
-        const socket = io();
+        const socket = io(window.location.host, {
+            path: "/ri3d26/socket.io"
+        });
 
         function changeStartButtonState(){
             if(socketIndicators["ri3d-socket-connected"] && socketIndicators["obs-socket-connected"]){
