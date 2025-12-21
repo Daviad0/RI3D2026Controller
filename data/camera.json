@@ -8,38 +8,38 @@
   "manager": "ws://127.0.0.1:4455",
   "configured": [
     {
-      "id": "563b93e0",
-      "name": "IT Camera 2 - View Left",
-      "url": "http://streamingwebcams.mtu.edu:1935/rtplive/camera051-high.stream/playlist.m3u8",
-      "x": "-200",
-      "y": "-50",
-      "width": "1",
-      "height": "1",
-      "type": "media"
+      "id": "d1fe8b7f",
+      "name": "Camera 1",
+      "url": "",
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "type": "unknown"
     },
     {
-      "id": "7c91e88c",
+      "id": "0c1fe87b",
       "name": "Camera 2",
-      "url": "http://streamingwebcams.mtu.edu:1935/rtplive/camera052-high.stream/playlist.m3u8",
-      "x": "-600",
-      "y": "0",
-      "width": "1",
-      "height": "1",
-      "type": "media"
+      "url": "",
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "type": "unknown"
     },
     {
-      "id": "84f3fddd",
-      "name": "IT Camera 1 - View Right",
-      "url": "http://streamingwebcams.mtu.edu:1935/rtplive/camera051-high.stream/playlist.m3u8",
-      "x": "0",
-      "y": "0",
-      "width": ".3",
-      "height": ".3",
+      "id": "c5709b68",
+      "name": "Camera 3",
+      "url": "",
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
       "type": "unknown"
     }
   ],
   "livePreview": {
-    "id": "84f3fddd",
-    "preview": "obs"
+    "id": "d1fe8b7f",
+    "preview": null
   }
 }

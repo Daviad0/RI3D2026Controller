@@ -41,8 +41,15 @@
                 <div style="margin-top: 20px;" class="container" name="scene-options-queued">
                     
                 </div>
-                
+                <hr style="margin-top: 20px;margin-bottom: 20px;"/>
+                <div class="flex-apart">
+                    <div></div>
+                    <div class="flex-center">
+                        <button class="bg-secondary">Clear Queued Transition</button>
+                        <button class="bg-primary">Submit Transition</button>
 
+                    </div>
+                </div>
                 
             </div>
             <div class="container two-column">
@@ -160,6 +167,7 @@
         let dataMapping = {
             "curScene": () => {
                 setupSceneOptions("selected");
+
             },
             "cameraSourceType": () => {
                 updateAllCameraLists();
@@ -235,18 +243,41 @@
                 </div>
             `,
             "active": `
-                <div class="active-scene-config" name="passive">
+                <div class="active-scene-config" name="active">
                     <div>
                         <div class="flex-center">
-                            <h3>Passive Scene Manager</h3>
+                            <h3>Active Scene Manager</h3>
                         </div>
                         <div class="flex-center">
-                            <span>Meant for passive environments (with little to no attention)</span>
+                            <span>Meant for presentations over the microphone</span>
                         </div>
                     </div>
                     <br/>
                     <div class="flex-apart">
                         <h3>Primary Camera</h3>
+                        <select class="camera_list" name="passive_primaryCam">
+                            <option value="Camera 1">Camera 1</option>
+                            <option value="Camera 2">Camera 2</option>
+                            <option value="Camera 3">Camera 3</option>
+                            <option value="Camera 4">Camera 4</option>
+                        </select>
+                    </div>
+                    <br/>
+                </div>
+            `,
+            "brb": `
+                <div class="active-scene-config" name="passive">
+                    <div>
+                        <div class="flex-center">
+                            <h3>Be Right Back Scene Manager</h3>
+                        </div>
+                        <div class="flex-center">
+                            <span>Leaving temporarily!</span>
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="flex-apart">
+                        <h3>Background Camera</h3>
                         <select class="camera_list" name="passive_primaryCam">
                             <option value="Camera 1">Camera 1</option>
                             <option value="Camera 2">Camera 2</option>
@@ -255,30 +286,8 @@
                         </select>
                     </div>
                     <div class="flex-apart comfort-margin-top-bottom">
-                        <h3>Overlay Management</h3>
-                        <button onclick="window.open('/manager', '_blank')" class="bg-secondary">Open Overlay Manager</button>
-                    </div>
-                </div>
-            `,
-            "brb": `
-                <div class="active-scene-config" name="passive">
-                    <div>
-                        <div class="flex-center">
-                            <h3>Passive Scene Manager</h3>
-                        </div>
-                        <div class="flex-center">
-                            <span>Meant for passive environments (with little to no attention)</span>
-                        </div>
-                    </div>
-                    <br/>
-                    <div class="flex-apart">
-                        <h3>Primary Camera</h3>
-                        <select class="camera_list" name="passive_primaryCam">
-                            <option value="Camera 1">Camera 1</option>
-                            <option value="Camera 2">Camera 2</option>
-                            <option value="Camera 3">Camera 3</option>
-                            <option value="Camera 4">Camera 4</option>
-                        </select>
+                        <h3>Message</h3>
+                        <input type="text" name="message" style="width: 300px;" placeholder="We'll Be Right Back"/>
                     </div>
                     <div class="flex-apart comfort-margin-top-bottom">
                         <h3>Overlay Management</h3>
@@ -290,15 +299,24 @@
                 <div class="active-scene-config" name="passive">
                     <div>
                         <div class="flex-center">
-                            <h3>Passive Scene Manager</h3>
+                            <h3>Dual View Scene Manager</h3>
                         </div>
                         <div class="flex-center">
-                            <span>Meant for passive environments (with little to no attention)</span>
+                            <span>Meant for more elaborate presentations!</span>
                         </div>
                     </div>
                     <br/>
                     <div class="flex-apart">
-                        <h3>Primary Camera</h3>
+                        <h3>Large Camera</h3>
+                        <select class="camera_list" name="passive_primaryCam">
+                            <option value="Camera 1">Camera 1</option>
+                            <option value="Camera 2">Camera 2</option>
+                            <option value="Camera 3">Camera 3</option>
+                            <option value="Camera 4">Camera 4</option>
+                        </select>
+                    </div>
+                    <div class="flex-apart comfort-margin-top-bottom">
+                        <h3>Small Camera</h3>
                         <select class="camera_list" name="passive_primaryCam">
                             <option value="Camera 1">Camera 1</option>
                             <option value="Camera 2">Camera 2</option>
@@ -361,6 +379,8 @@
                 activeSceneOptionsContainer.classList.add("dimmed");
                 queuedSceneOptionsContainer.classList.add("request-anim-container");
             }
+
+            updateAllCameraLists();
         }
 
         function multiButtonSelect(name, value, target="selected"){
