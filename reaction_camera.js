@@ -23,7 +23,8 @@ async function setOBSmediaSource(obsManager, camera, target, targetSceneId, scen
                 "sceneItemTransform": {
                     "positionX": parseInt(x),
                     "positionY": parseInt(y),
-                    "width": parseInt(width),
+                    "scaleX": parseFloat(width),
+                    "scaleY": parseFloat(height)
                 }
             }
         },
@@ -39,8 +40,7 @@ async function setOBSmediaSource(obsManager, camera, target, targetSceneId, scen
         }
     ];
 
-    let responses = await obsManager.obs.callBatch(requests);
-    console.log("Set OBS media source responses:", responses);
+    await obsManager.sendBatchRequests(requests);
 }
 
 async function handleReaction(key, value, globalConfig, obsManager){

@@ -61,21 +61,22 @@ let globalConfig = {
         manager: null
     },
     obs_state: {
-        scenesToTarget: [ // set MANUALLY
+        scenesToTarget: [ // set MANUALLY - mimiced in obs-connection.js
             "Passive",
             "Present",
             "BeRightBack",
             "TwoCamera",
             "StartingSoon"
         ],
-        currentScene: null
+        currentScene: null,
+        cache: {}
     },
     scene_index_mapping: { // automatically filled on OBS connection
 
     }
 };
 
-let obsManager = null;
+let obsManager = new OBSManager(io);
 
 async function readConfig(group) {
     // TRY to read the file, if it doesn't exist return the default structure
@@ -112,19 +113,6 @@ io.on('connection', (socket) => {
 
     socket.emit("entireConfig", globalConfig);
 
-    socket.on('createObsManager', async (obsUrl, password) => {
-        const manager = new OBSManager(obsUrl, password);
-        const connected = await manager.connect();
-        console.log("OBS Manager connection status:", connected);
-        if(connected){
-            obsManager = manager;
-            globalConfig.camera.manager = obsManager.obsUrl;
-
-            obsManager.setupImportantListeners(globalConfig);
-            obsManager.reportSceneIndexMapping(globalConfig);
-        }
-    });
-
     socket.on('changeData', async (group, key, value) => {
         console.log(`Changing data: ${group} -> ${key} = ${value}`);
         if(globalConfig[group]){
@@ -137,6 +125,17 @@ io.on('connection', (socket) => {
                 // no await needed here
                 reaction_groups[group](key, value);
             }
+        }
+    });
+
+    // handle to receive OBS data bits
+    // this is NOT in response to anything, just as a "default"
+    socket.on('obs-data', (group, key, value) => {
+        console.log(`Received OBS data: ${group} -> ${key} = ${value}`);
+        if(globalConfig[group]){
+            globalConfig[group][key] = value;
+            
+            io.emit('dataUpdated', group, key, value);
         }
     });
 

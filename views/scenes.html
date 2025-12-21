@@ -96,12 +96,12 @@
                                 <input onchange="changeCameraDetailsOfSelected(event)" style="width: 80px" type="number" name="y" placeholder="0" /> 
                             </div>
                             <div style="flex:1">
-                                <span class="tiny-label">Width</span>
-                                <input onchange="changeCameraDetailsOfSelected(event)" style="width: 80px" type="number" name="width" placeholder="0" /> 
+                                <span class="tiny-label">Scale X</span>
+                                <input onchange="changeCameraDetailsOfSelected(event)" max="3" style="width: 80px" type="number" name="width" placeholder="0" /> 
                             </div>
                             <div style="flex:1">
-                                <span class="tiny-label">Height</span>
-                                <input onchange="changeCameraDetailsOfSelected(event)" style="width: 80px" type="number" name="height" placeholder="0" /> 
+                                <span class="tiny-label">Scale Y</span>
+                                <input onchange="changeCameraDetailsOfSelected(event)" max="3" style="width: 80px" type="number" name="height" placeholder="0" /> 
                             </div>
                         </div>
 
@@ -128,7 +128,7 @@
     </body>
     <script>
 
-        const socket = io("ccr.students.mtu.edu", {
+        const socket = io(window.location.host, {
             path: "/ri3d26/socket.io"
         });
 
@@ -148,6 +148,14 @@
             </div>
         </div>
         `
+
+        let sceneNameMapping = {
+            "Passive": "passive",
+            "Present": "active",
+            "BeRightBack": "brb",
+            "TwoCamera": "two-camera",
+            "StartingSoon": "starting-soon"
+        };
 
         let dataMapping = {
             "curScene": () => {
@@ -465,6 +473,10 @@
             changeStatusIndicator("ri3d-socket-connected", false);
         });
 
+        socket.on("dataUpdated", (group, key, value) => {
+            reactToDataChange(group, key, value);
+        });
+
         socket.on("entireConfig", (config) => {
             // set initial states
             let camerasConfigured = config.camera.configured;
@@ -477,73 +489,21 @@
                 addVisualCamera(cam.id, cam.name, cam.url);
             });
             updateAllCameraLists(true);
+
+            let currentScene = config.obs_state.currentScene;
+            reactToDataChange("obs_state", "currentScene", currentScene);
         });
 
         function reactToDataChange(group, key, value){
-            // if(group == "overlay"){
-            //     if(key == "currentStage"){
-            //         // parse the information to get what's currently selected
-            //         let buttonToTarget = "";
-            //         if(value.includes("panel-enlarged")){
-            //             buttonToTarget = "panel-enlarged";
-            //         } else if(value.includes("panel-open")){
-            //             buttonToTarget = "panel-open";
-            //         } else if(value.includes("panel-closed")){
-            //             buttonToTarget = "panel-closed";
-            //         }
-
-                    
-
-            //         selectedOptions["curStage"] = value;
-            //         updateRequestedView(value);
-
-            //         if(buttonToTarget != ""){
-            //             let buttons = document.getElementsByName("reqStage");
-            //             buttons.forEach((btn) => {
-            //                 let val = btn.getAttribute("value");
-            //                 if(val === buttonToTarget){
-            //                     btn.classList = "multi-button bg-success";
-            //                 }
-            //             });
-            //         }
-
-            //         let sound = "obs";
-            //         // if contains muted, then also set sound to muted
-            //         if(value.includes("muted")){
-            //             sound = "muted";
-            //         }
-
-            //         selectedOptions["streamSound"] = sound;
-
-            //         let buttons = document.getElementsByName("streamSound");
-            //         buttons.forEach((btn) => {
-            //             let val = btn.getAttribute("value");
-            //             if(val === sound){
-            //                 btn.classList = "multi-button bg-success";
-            //             }
-            //         });
-            //     }
-            // }else if(group == "camera"){
-            //     if(key == "playTransition"){
-            //         // update so we have it for later
-            //         selectedOptions["transitionNum"] = value;
-            //     }else if(key == "available"){
-            //         selectedOptions["availableCams"] = value;
-            //         let inputElement = document.getElementsByName("availableCams")[0];
-            //         inputElement.value = value.join(", ");
-            //         updateCameraPreviews();
-            //     }else if(key == "preview"){
-            //         selectedOptions["showCamPreviews"] = value;
-
-            //         let buttons = document.getElementsByName("showCamPreviews");
-            //         buttons.forEach((btn) => {
-            //             let val = btn.getAttribute("value");
-            //             if(val === value){
-            //                 btn.classList = "multi-button bg-primary";
-            //             }
-            //         });
-            //     }
-            // }
+            if(group == "obs_state"){
+                if(key == "currentScene"){
+                    // just have the mapping here...
+                    let mappedValue = sceneNameMapping[value] || null;
+                    if(mappedValue == null) return;
+                    multiButtonSelect("curScene", mappedValue, "before");
+                    setupSceneOptions("before");
+                }
+            }
         }
 
         function updateServerWithCameras(){
