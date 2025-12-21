@@ -5,7 +5,12 @@ const basePath = "/ri3d26";
 
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
-    path: basePath + '/socket.io'
+    path: basePath + '/socket.io',
+    // allow for localhost during development
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
 });
 const OBSWebSocket = require('obs-websocket-js').OBSWebSocket;
 const OBSManager = require('./obs-server').OBSManager;
