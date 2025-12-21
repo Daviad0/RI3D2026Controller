@@ -1,31 +1,36 @@
 const express = require('express');
 const fs = require('fs');
 const app = express();
+const basePath = "/ri3d26";
+
 const http = require('http').createServer(app);
-const io = require('socket.io')(http);
+const io = require('socket.io')(http, {
+    path: basePath + '/socket.io'
+});
 const OBSWebSocket = require('obs-websocket-js').OBSWebSocket;
 const OBSManager = require('./obs-server').OBSManager;
 
 const reaction_camera = require('./reaction_camera');
 
-// serve the public folder
-app.use(express.static('public'));
-// serve previews folder
-app.use('/previews', express.static('previews'));
 
-app.get('/livestream', (req, res) => {
+// serve the public folder
+app.use(basePath, express.static('public'));
+// serve previews folder
+app.use(basePath + '/previews', express.static('previews'));
+
+app.get(basePath + '/livestream', (req, res) => {
     res.sendFile(__dirname + '/views/livestream.html');
 });
-app.get('/stream', (req, res) => {
+app.get(basePath + '/stream', (req, res) => {
     res.sendFile(__dirname + '/views/stream.html');
 });
-app.get('/scenes', (req, res) => {
+app.get(basePath + '/scenes', (req, res) => {
     res.sendFile(__dirname + '/views/scenes.html');
 });
-app.get('/manager', (req, res) => {
+app.get(basePath + '/manager', (req, res) => {
     res.sendFile(__dirname + '/views/manager.html');
 });
-app.get('/bigtimer', (req, res) => {
+app.get(basePath + '/bigtimer', (req, res) => {
     res.sendFile(__dirname + '/views/bigtimer.html');
 });
 
