@@ -1,0 +1,239 @@
+@font-face {
+    font-family: 'Cooper Hewitt';
+    src: url('CooperHewitt-Medium.ttf');
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}
+
+:root{
+    --primary-color: #ffcd00;
+    --secondary-color: #000000;
+    --background-color: #ffffff;
+    --error-color: #ff2134;
+    --success-color: #00c853;
+    --gray-color: #e1e1e1;
+}
+
+*{
+    font-family: 'Cooper Hewitt';
+    box-sizing: border-box;
+}
+
+body{
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--secondary-color);
+}
+
+.bg-success{
+    background-color: var(--success-color);
+    color: var(--background-color);
+}
+
+.bg-error{
+    background-color: var(--error-color);
+    color: var(--background-color);
+}
+
+.bg-primary{
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+}
+
+.bg-secondary{
+    background-color: var(--secondary-color);
+    color: var(--background-color);
+}
+
+button{
+    font-family: 'Cooper Hewitt';
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button.small-button{
+    padding: 6px 12px;
+}
+
+.sub-scroll{
+    max-height: 40vh;
+    overflow-y: auto;
+}
+
+@keyframes request-active-container {
+    0% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); }
+    50% { box-shadow: 0 4px 8px rgba(159, 132, 0, 0.607); }
+    100% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); }
+}
+
+@keyframes request-active {
+    0% { filter: brightness(.75); }
+    50% { filter: brightness(1.25); }
+    100% { filter: brightness(.75); }
+}
+
+.request-anim{
+    animation: request-active 1s infinite;
+}
+
+.request-anim-container{
+    animation: request-active-container 1s infinite;
+}
+
+input{
+    border: 2px solid var(--secondary-color);
+    border-radius: 8px;
+    padding: 8px;
+    background-color: var(--background-color);
+    transition: all 0.3s ease;
+}
+
+select{
+    border: 2px solid var(--secondary-color);
+    border-radius: 8px;
+    padding: 8px;
+    background-color: var(--background-color);
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+input:active, input:focus{
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 0 5px var(--primary-color);
+}
+
+.designed-background{
+    background-image: url('staticbackground.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.center-module{
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.container{
+    padding: 20px;
+    border-radius: 16px;
+    background-color: var(--background-color);
+    color: var(--secondary-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    margin: 10px;
+}
+
+.dimmed{
+    opacity: 0.6;
+    filter: brightness(0.8);
+}
+
+.border-container{
+    padding: 15px;
+    border-radius: 16px;
+    border: 2px solid var(--secondary-color);
+}
+
+.multi-buttons{
+    display: flex;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.multi-button{
+    padding: 6px 12px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background-color 0.3s ease;
+}
+
+.flex-center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.flex-apart{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-indicator{
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+}
+
+.container.across-screen{
+    width: 80vw;
+    max-width: 600px;
+}
+
+.container.two-column{
+    width: 40vw;
+    max-width: 600px;
+}
+
+h1, h2, h3, h4, h5, h6{
+    margin: 0;
+    padding: 0;
+}
+
+.comfort-margin-top-bottom{
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+span{
+    display: block;
+}
+
+.camera.bg-primary .show-preview{
+    background-color: var(--primary-color) !important;
+    color: var(--secondary-color) !important;
+}
+
+
+.camera-prev{
+    background-color: var(--gray-color);
+    border-radius: 8px;
+    padding: 5px;
+    width: 200px;
+}
+
+.camera-prev img{
+    width: 100%;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.text-label{
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.tiny-label{
+    font-size: 0.8em;
+    margin-bottom: 5px;
+}

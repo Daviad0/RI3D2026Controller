@@ -1,0 +1,984 @@
+<!--Add -->
+<head>
+    <style>
+
+        @font-face {
+            font-family: 'Coolvetica';
+            src: url('Coolvetica\ Hv\ Comp.otf');
+        }
+
+        @font-face {
+            font-family: 'Cooper Hewitt';
+            src: url('CooperHewitt-Medium.otf');
+        }
+
+        .html-overlay{
+            transition: all 0.5s ease;
+        }
+
+        .lottie{
+            width: 100%;
+            position: absolute;
+        }
+        .html-overlay{
+            position: absolute;
+            width: 100%;
+            aspect-ratio: 16/9;
+            /* border: 2px solid black; */
+            margin: 0;
+        }
+
+        /* Manual Elements */
+
+        .timer{
+            font-family: 'Coolvetica', sans-serif;
+            font-size: 8.5vw;
+            position: absolute;
+            /* background-color: red; */
+            right: 3vw;
+            bottom: 2vw;
+            text-align: left;
+            width: 15vw;
+
+            transition: all 0.5s ease;
+
+        }
+
+        .enlarged-timer{
+            font-size: 10.5vw;
+            right: 7.2vw;
+            bottom: 2.5vw
+        }
+
+
+        .constant-timer-marker{
+            position: absolute;
+            right: 19vw;
+            bottom: 3.6vw;
+            width: 2vw;
+            background-color: black;
+
+            transition: all 0.5s ease;
+
+        }
+
+        .enlarged-constant-timer-marker{
+            right: 23.5vw;
+            width: 7vw;
+            bottom: 4.6vw
+        }
+
+        .muted-text{
+            font-family: 'Cooper Hewitt', sans-serif;
+            font-size: 2.4vw;
+            position: absolute;
+            right: 2.6vw;
+            bottom: 15vw;
+            text-align: left;
+            color: black;
+
+            transition: all 0.5s ease;
+
+        }
+
+
+        body{
+            margin: 0;
+            overflow: hidden;
+            background-color: gray;
+            padding: 0;
+        }
+        
+    </style>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+
+    
+</head>
+<body>
+    <div class="lottie" id="camera-transition"></div>  
+
+    <div class="lottie" id="lottie"></div>  
+
+    <div class="html-overlay">
+        <div class="timer clock">
+            <span id="timer">20:25:26</span>
+        </div>
+        <div class="constant-timer-marker" style="background-color: transparent;width:6vw" id="timer-marker"></div>
+        <div class="muted-text" id="muted">
+            We're Muted
+
+        </div>
+    </div>
+    <div class="lottie" id="sponsor"></div>  
+
+    <div id="stateInformationView" style="display: none;">
+    Queue:
+    </div>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.13.0/lottie.min.js" type="text/javascript"></script>
+<script>
+
+    let socket = io();
+
+    var stages = ["panel-open-muted", "panel-large", "panel-open", "panel-closed", "panel-closed-muted", "panel-enlarged"];
+
+
+    var sponsors = [
+        {
+            name: "Pavlis Honors College",
+            versions: {
+                "bottom-bar": {
+                    animationPath: "pavlissponsorbar.json",
+                    frames: [0, 100],
+                    speed: .3
+                },
+                "corner": {
+                    animationPath: "pavlis_timer_segment.json",
+                    frames: [0, 100],
+                    speed: 0.2
+                }
+            }
+        },
+        {
+            name: "41-Lumber",
+            versions: {
+                "bottom-bar": {
+                    animationPath: "41-lumber_sponsor_panel.json",
+                    frames: [0, 160],
+                    speed: 0.4
+                },
+                "corner": {
+                    animationPath: "41-lumber_timer_segment.json",
+                    frames: [0, 120],
+                    speed: 0.2
+                }
+            }
+        },
+        {
+            name: "Copper Country Robotics",
+            versions: {
+                "bottom-bar": {
+                    animationPath: "ccrsponsorbar.json",
+                    frames: [0, 200],
+                    speed: 0.4
+                },
+                "corner": {
+                    animationPath: "ccr_mtu_timer_segment.json",
+                    frames: [0, 120],
+                    speed: 0.2
+                }
+            }
+        },
+        {
+            name: "Superior National Bank",
+            versions: {
+                "bottom-bar": {
+                    animationPath: "snbsponsorbar.json",
+                    frames: [0, 160],
+                    speed: 0.4
+                },
+                "corner": {
+                    animationPath: "snb_timer_segment.json",
+                    frames: [0, 100],
+                    speed: 0.2
+                }
+            }
+        },
+        {
+            name: "COC / COE",
+            versions: {
+                "bottom-bar": {
+                    animationPath: "coccoe_sponsor.json",
+                    frames: [0, 160],
+                    speed: 0.4
+                },
+                "corner": {
+                    animationPath: "coecoc_timer_segment.json",
+                    frames: [0, 120],
+                    speed: 0.2
+                }
+            }
+        },
+        {
+            name: "Up Next, Up Now",
+            versions: {
+                "bottom-bar": {
+                    animationPath: "upnextupnowsponsorbar.json",
+                    frames: [0, 180],
+                    speed: 0.2
+                  }
+            },
+        },
+        {
+            name: "ThriftyBot",
+            versions: {
+                "corner": {
+                    animationPath: "thrifty_timer_segment.json",
+                    frames: [0, 120],
+                    speed: 0.2
+                }
+            },
+        }
+
+    ];
+
+    var localStateInformation = {
+        sponsor: {
+            currentIndex: -1,
+            isCurrentlyActive: false,
+            currentSponsor: null,
+            lottieState: null,
+            allowSponsorChange: "bottom-bar", // bottom-bar, logo, corner, NONE
+            waitFrames: 5
+        },
+        overlay: {
+            currentStage: "panel-open-muted",
+            requestedStage: null,
+            transitionState: {
+                targetTransition: "",
+                transitionLock: false,
+                transitionSignal: null
+            }
+        },
+        timer: {
+            targetTime: null,
+            mode: "clock" // or clock
+        },
+        camera: {
+            isTransitioning: false,
+            currentTransitionNumber: 0
+        }
+    }
+
+    localStateInformation.timer.targetTime = new Date().getTime() + (20 * 60 + 25) * 1000; // 20 minutes and 25 seconds from now
+
+
+    var states = {
+        "panel-open-muted": {
+            allowSponsorChange: "bottom-bar"
+        },
+        "panel-open": {
+            allowSponsorChange: "bottom-bar"
+        },
+        "panel-large": {
+            allowSponsorChange: "NONE"
+        },
+        "panel-closed": {
+            allowSponsorChange: "corner"
+        },
+        "panel-closed-muted": {
+            allowSponsorChange: "corner"
+        },
+        "panel-enlarged": {
+            allowSponsorChange: "logo"
+        }
+    }
+    // transitions include START and END frames
+    // if START > END, the animation plays in reverse
+    var transitions = {
+        "panel-open-muted_panel-open": {
+            passive: true,
+            actions: [
+                {
+                    type: "domAction",
+                    speed: 300,
+                    action: () => {
+                        // hide muted text
+                        document.getElementById("muted").style.opacity = 0;
+                    }
+                },
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [0, 29]
+                }
+            ],
+            // define final state to both CHECK and in case something goes wrong during a transition
+            finalState: {
+                "muted": {
+                    opacity: 0
+                }
+            }
+        },
+        "panel-open-muted_panel-closed-muted": {
+            passive: false,
+            actions: [
+                {
+                    type: "subTransition",
+                    speed: 0,
+                    action: [
+                        "panel-open-muted_panel-open"
+                    ]
+                },
+                {
+                    type: "domAction",
+                    speed: 500,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                },
+                {
+                    type: "subTransition",
+                    speed: 0,
+                    action: [
+                        "panel-open_panel-closed"
+                    ]
+                },
+                {
+                    type: "domAction",
+                    speed: 500,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                },
+                {
+                    type: "subTransition",
+                    speed: 0,
+                    action: [
+                        "panel-closed_panel-closed-muted"
+                    ]
+                }
+            ]
+        
+        },
+        "panel-open_panel-open-muted": {
+            passive: true,
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [29, 0]
+                },
+                {
+                    type: "domAction",
+                    speed: 300,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                },
+                {
+                    type: "domAction",
+                    speed: 1000,
+                    action: () => {
+                        // show muted text
+                        document.getElementById("muted").style.opacity = 1;
+                    }
+                }
+            ]
+        },
+        "panel-open_panel-large": {
+            passive: false,
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [30, 60]
+                },
+                {
+                    type: "domAction",
+                    speed: 300,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                }
+            ]
+        },
+        "panel-large_panel-open": {
+            passive: false,
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [59, 30]
+                },
+                {
+                    type: "domAction",
+                    speed: 300,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                }
+            ]
+        },
+        "panel-open_panel-closed": {
+            passive: false,
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [60, 90]
+                },
+                {
+                    type: "domAction",
+                    speed: 300,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                }
+            ]
+        },
+        "panel-closed_panel-open": {
+            passive: false,
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [89, 60]
+                },
+                {
+                    type: "domAction",
+                    speed: 300,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                }
+            ]
+        },
+        "panel-closed_panel-closed-muted": {
+            passive: true,
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [119, 90]
+                },
+                {
+                    type: "domAction",
+                    speed: 300,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                },
+                {
+                    type: "domAction",
+                    speed: 1000,
+                    action: () => {
+                        // show muted text
+                        document.getElementById("muted").style.opacity = 1;
+                    }
+                }
+            ]
+        },
+        "panel-closed-muted_panel-enlarged": {
+            passive: false,
+            actions: [
+                {
+                    type: "subTransition",
+                    speed: 0,
+                    action: [
+                        "panel-closed-muted_panel-closed"
+                    ]
+                },
+                {
+                    type: "domAction",
+                    speed: 500,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                },
+                {
+                    type: "subTransition",
+                    speed: 0,
+                    action: [
+                        "panel-closed_panel-enlarged"
+                    ]
+                }
+            ]
+        },
+        "panel-enlarged_panel-closed-muted": {
+            passive: false,
+            actions: [
+                {
+                    type: "subTransition",
+                    speed: 0,
+                    action: [
+                        "panel-enlarged_panel-closed"
+                    ]
+                },
+                {
+                    type: "domAction",
+                    speed: 500,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                },
+                {
+                    type: "subTransition",
+                    speed: 0,
+                    action: [
+                        "panel-closed_panel-closed-muted"
+                    ]
+                }
+            ]
+        },
+        "panel-closed-muted_panel-closed": {
+            passive: true,
+            actions: [
+                {
+                    type: "domAction",
+                    speed: 300,
+                    action: () => {
+                        // hide muted text
+                        document.getElementById("muted").style.opacity = 0;
+                    }
+                },
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [90, 120]
+                }
+            ],
+            // define final state to both CHECK and in case something goes wrong during a transition
+            finalState: {
+                "muted": {
+                    opacity: 0
+                }
+            }
+        },
+        "panel-closed_panel-enlarged": {
+            passive: false,
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [120, 160]
+                },
+                {
+                    type: "domAction",
+                    speed: 500,
+                    action: () => {
+                        // apply the enlarged classes on each and also change the style
+
+                        let timerElem = document.querySelector(".timer");
+                        let constantMarkerElem = document.querySelector(".constant-timer-marker");
+                        timerElem.classList.add("enlarged-timer");
+                        constantMarkerElem.classList.add("enlarged-constant-timer-marker");
+                        constantMarkerElem.style.width = "7vw";
+
+                    }
+                }
+            ]
+        },
+        "panel-enlarged_panel-closed": {
+            passive: false,
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [159, 120]
+                },
+                {
+                    type: "domAction",
+                    speed: 500,
+                    action: () => {
+
+                        // remove the enlarged classes on each and also change the style
+
+                        let timerElem = document.querySelector(".timer");
+                        let constantMarkerElem = document.querySelector(".constant-timer-marker");
+                        timerElem.classList.remove("enlarged-timer");
+                        constantMarkerElem.classList.remove("enlarged-constant-timer-marker");
+                        constantMarkerElem.style.width = "6vw";
+
+                    }
+                }
+            ]
+        },
+    };
+
+    var isTransitioning = false;
+
+    function playCameraTransition(){
+
+        localStateInformation.camera.isTransitioning = true;
+
+        let cameraTransition = bodymovin.loadAnimation({
+            container: document.getElementById('camera-transition'),
+            renderer: 'svg',
+            loop: false,
+            autoplay: false,
+            path: 'fulltransition.json',
+            name: "Camera Transition"
+        });
+
+        cameraTransition.setSpeed(4);
+        cameraTransition.addEventListener("complete", function(){
+            console.log("Camera transition complete");
+            // mark transition as complete
+            localStateInformation.camera.isTransitioning = false;
+            document.getElementById('camera-transition').innerHTML = "";
+            // remove event listener
+            cameraTransition.removeEventListener("complete", arguments.callee);
+            
+        });
+        cameraTransition.playSegments([0, 340], true);
+
+        
+    }
+
+    async function playTransition(toStage){
+
+        // check transition lock
+        if(localStateInformation.overlay.transitionState.transitionLock){
+            console.log("Transition lock active, cannot transition.");
+            return;
+        }
+        localStateInformation.overlay.transitionState.transitionLock = true;
+
+        localStateInformation.overlay.transitionState.transitionSignal = "active";
+
+
+        let currentStage = localStateInformation.overlay.currentStage;
+        var transitionKey = currentStage + "_" + toStage;
+
+        // now we get transition ACTIONS between these states
+        // run each action and await for each one of them...
+        // this probably isn't good...
+        let actions = transitions[transitionKey]?.actions;
+        if(!actions){
+            console.log("No transition defined from " + currentStage + " to " + toStage);
+            localStateInformation.overlay.transitionState.transitionLock = false;
+            return;
+        }
+
+
+        // now run each action in sequence
+        for(let i = 0; i < actions.length; i++){
+            let actionObj = actions[i];
+            if(actionObj.type == "domAction"){
+                // run the action and wait for the specified time
+                await timeout_waitForAnimation(actionObj.speed, actionObj.action);
+            }else if(actionObj.type == "lottieAction"){
+                // run the animation and do not care about the time of it
+                // we can manually time based on the transition
+                animation.setSpeed(actionObj.speed);
+                // play the segment and wait for it to complete
+                animation.playSegments(actionObj.action, true);
+            }else if(actionObj.type == "subTransition"){
+                // get the actions for this sub-transition and add them to actions
+                // then run them directly NOW and then continue the rest
+                let subTransitions = actionObj.action;
+                let allSubActions = [];
+                for(let j = 0; j < subTransitions.length; j++){
+                    let subTransitionKey = subTransitions[j];
+                    let subActions = transitions[subTransitionKey]?.actions;
+                    if(!subActions){
+                        console.log("No sub-transition defined for " + subTransitionKey);
+                        continue;
+                    }
+                    allSubActions = allSubActions.concat(subActions);
+                    // now add these actions to the main action list at the current position
+                }
+                actions = actions.slice(0, i + 1).concat(allSubActions).concat(actions.slice(i + 1));
+            }
+        }
+
+        // now verify the final state of each item...
+        let finalState = transitions[transitionKey]?.finalState;
+        if(finalState){
+            for(let elementId in finalState){
+                let element = document.getElementById(elementId);
+                let styles = finalState[elementId];
+                for(let styleKey in styles){
+                    element.style[styleKey] = styles[styleKey];
+                }
+            }
+        }
+
+        localStateInformation.overlay.transitionState.transitionSignal = "complete";
+        localStateInformation.overlay.transitionState.transitionLock = false;
+
+    }
+
+    function isTransitionPassive(toStage){
+        let currentStage = localStateInformation.overlay.currentStage;
+        var transitionKey = currentStage + "_" + toStage;
+        let transitionObj = transitions[transitionKey];
+        if(!transitionObj) return false;
+        return transitionObj.passive || false;
+    }
+
+    function loop_master(){
+        loop_updateTimer();
+        loop_debugUpdateState();
+        loop_transition();  
+        loop_sponsor();
+    
+        
+    }
+
+    function loop_transition(){
+        let waitingForSponsor = !localStateInformation.sponsor.isCurrentlyActive;
+
+        // if there is a requested overlay change and we are waiting for a sponsor
+        let requestedStage = localStateInformation.overlay.requestedStage;
+        // first check if the transition signal is set to "complete"
+        let transitionSignal = localStateInformation.overlay.transitionState.transitionSignal;
+        let passiveTransition = requestedStage ? isTransitionPassive(requestedStage) : false;
+    
+        if(transitionSignal == "complete"){
+            // reset signal
+            localStateInformation.overlay.currentStage = requestedStage;
+            localStateInformation.overlay.requestedStage = null; // reset request
+            localStateInformation.overlay.transitionState.transitionSignal = null;
+            localStateInformation.overlay.transitionState.transitionLock = false;
+
+            let stateVars = states[requestedStage];
+
+            // send to socket that the requestedStage was handled
+            socket.emit("changeData", "overlay", "requestedStage", null);
+            socket.emit("changeData", "overlay", "currentStage", localStateInformation.overlay.currentStage);
+
+            let oldAllowSponsorChange = localStateInformation.sponsor.allowSponsorChange;
+            if((localStateInformation.sponsor.allowSponsorChange == "NONE" || stateVars.allowSponsorChange != oldAllowSponsorChange) && localStateInformation.sponsor.lottieState){
+                localStateInformation.sponsor.lottieState.goToAndStop(0, true);
+            }
+
+            localStateInformation.sponsor.allowSponsorChange = stateVars.allowSponsorChange;
+            localStateInformation.sponsor.waitFrames = 5; // reset wait frames
+            
+
+        }
+        else if(requestedStage && (waitingForSponsor || passiveTransition)){
+
+            let stateVars = states[requestedStage];
+            let oldAllowSponsorChange = localStateInformation.sponsor.allowSponsorChange;
+            if((localStateInformation.sponsor.allowSponsorChange == "NONE" || stateVars.allowSponsorChange != oldAllowSponsorChange) && localStateInformation.sponsor.lottieState){
+                localStateInformation.sponsor.lottieState.goToAndStop(0, true);
+                localStateInformation.sponsor.waitFrames += 20; // add extra wait frames to allow sponsor to reset
+            }
+
+            
+
+            playTransition(requestedStage);
+        }
+    }
+
+    function loop_sponsor(){
+        // check if there needs to be a new sponsor
+        let waitingForSponsor = !localStateInformation.sponsor.isCurrentlyActive;
+        let allowSponsorChange = localStateInformation.sponsor.allowSponsorChange;
+        if(waitingForSponsor && allowSponsorChange != "NONE" && localStateInformation.sponsor.waitFrames <= 0){
+            // transition to next index, unless null (which it would be -1)
+            let currentIndex = localStateInformation.sponsor.currentIndex;
+            if(currentIndex == null) currentIndex = -1;
+            let nextIndex = (currentIndex + 1) % sponsors.length;
+            localStateInformation.sponsor.currentIndex = nextIndex;
+            localStateInformation.sponsor.currentSponsor = sponsors[nextIndex];
+
+
+            // before we set isCurrentlyActive, we need to check if this sponsor has the requested version
+            let sponsorVersion = localStateInformation.sponsor.currentSponsor.versions[allowSponsorChange];
+            if(!sponsorVersion){
+                console.log("Sponsor " + localStateInformation.sponsor.currentSponsor.name + " does not have version " + allowSponsorChange + ", skipping.");
+                // set wait frames to 5 to avoid rapid skipping
+                localStateInformation.sponsor.waitFrames = 1;
+                return;
+            }
+            
+
+            localStateInformation.sponsor.isCurrentlyActive = true;
+
+            // now direct the sponsor animation to play
+            
+            document.getElementById("sponsor").innerHTML = ""; // clear previous animation container
+            localStateInformation.sponsor.lottieState = bodymovin.loadAnimation({
+                container: document.getElementById('sponsor'),
+                renderer: 'svg',
+                loop: false,
+                autoplay: false,
+                path: sponsorVersion.animationPath,
+                name: localStateInformation.sponsor.currentSponsor.name
+            });
+
+            localStateInformation.sponsor.waitFrames = 5; // reset wait frames
+
+            localStateInformation.sponsor.lottieState.setSpeed(sponsorVersion.speed);
+            localStateInformation.sponsor.lottieState.playSegments(sponsorVersion.frames, true);
+
+            localStateInformation.sponsor.lottieState.addEventListener("complete", function(){
+                // mark sponsor as inactive
+                localStateInformation.sponsor.isCurrentlyActive = false;
+                // remove event listener
+                localStateInformation.sponsor.lottieState.removeEventListener("complete", arguments.callee);
+            });
+        }else if(waitingForSponsor && allowSponsorChange){
+            localStateInformation.sponsor.waitFrames -= 1;
+        }
+    }
+
+    function loop_debugUpdateState(){
+        let currentSponsor = localStateInformation.sponsor.currentSponsor;
+        let requestedState = localStateInformation.overlay.requestedStage;
+        let currentStage = localStateInformation.overlay.currentStage;
+        let waitFrames = localStateInformation.sponsor.waitFrames;
+        let isComplete = isTransitioning;
+        let stateInfoView = document.getElementById("stateInformationView");
+        stateInfoView.innerHTML = 
+            "Current Sponsor: " + (currentSponsor ? currentSponsor.name : "None") + "<br>" +
+            "Requested Stage: " + (requestedState ? requestedState : "None") + "<br>" +
+            "Current Stage: " + currentStage + "<br>" +
+            "Wait Frames: " + waitFrames + "<br>" +
+            "Is Transitioning: " + isComplete + "<br>";
+
+    }
+
+    function loop_updateTimer(){
+        let timerElement = document.getElementById("timer");
+        let now = new Date().getTime();
+
+        // check by mode... if countdown, show time remaining
+        if(localStateInformation.timer.mode == "countdown"){
+            let distance = localStateInformation.timer.targetTime - now;
+            if(distance < 0){
+                timerElement.innerText = "00:00:00";
+                return;
+            }
+
+            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            timerElement.innerText = 
+                (hours < 10 ? "0" + hours : hours) + ":" + 
+                (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+                (seconds < 10 ? "0" + seconds : seconds);
+        }else if(localStateInformation.timer.mode == "clock"){
+            let currentDate = new Date(now);
+            let hours = currentDate.getHours();
+            let minutes = currentDate.getMinutes();
+            let seconds = currentDate.getSeconds();
+
+            // show in 12-hour format
+            hours = hours % 12;
+            if(hours == 0) hours = 12; // show 12 instead of 0
+
+            timerElement.innerText = 
+                (hours < 10 ? "0" + hours : hours) + ":" + 
+                (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+                (seconds < 10 ? "0" + seconds : seconds);
+        }
+        
+    }
+
+    // run functionToCall and then wait for time (ms)   
+    // allows animations to be began and then ran asynchronously
+    function timeout_waitForAnimation(time, functionToCall){
+        functionToCall();
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve();
+            }, time);
+        });
+    }
+
+    setInterval(loop_master, 200);
+    
+
+    window.onkeyup = function(event){
+        // 1: top-left
+        // 2: top-right
+        // 3: bottom-left
+        // 4: bottom-right
+
+        let transitionLockEnabled = localStateInformation.overlay.transitionState.transitionLock;
+        let transitionComplete = localStateInformation.overlay.transitionState.transitionSignal == "complete";
+
+        if(transitionLockEnabled || transitionComplete){
+            console.log("Currently transitioning, input ignored.");
+            return;
+        }
+        
+
+
+        switch(event.key){
+            case "1":
+                // playTransition("panel-open-muted");
+                localStateInformation.overlay.requestedStage = "panel-open-muted";
+                break;
+            case "2":
+                // playTransition("panel-open");
+                localStateInformation.overlay.requestedStage = "panel-open";
+                break;
+            case "3":
+                // playTransition("panel-large");
+                localStateInformation.overlay.requestedStage = "panel-large";
+                break;
+            case "4":
+                // playTransition("panel-closed");
+                localStateInformation.overlay.requestedStage = "panel-closed";
+                break;
+            case "5":
+                // playTransition("panel-closed-muted");
+                localStateInformation.overlay.requestedStage = "panel-closed-muted";
+                break;
+            case "6":
+                // playTransition("panel-enlarged");
+                localStateInformation.overlay.requestedStage = "panel-enlarged";
+                break;  
+        }
+    }
+
+
+    var animation = bodymovin.loadAnimation({
+        container: document.getElementById('lottie'),
+        renderer: 'svg',
+        loop: false,
+        autoplay: false,
+        path: 'testbarsequence.json',
+        name: "Test Animation"
+    });
+
+    var timerSpin = bodymovin.loadAnimation({
+        container: document.getElementById('timer-marker'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: 'constantclockspin.json',
+        name: "Timer Spin"
+    });
+
+    // wait for the animation segment to be done
+    animation.addEventListener("complete", function(){
+        console.log("Transition complete.");
+        isTransitioning = false;
+        // document.body.style.backgroundColor = "white"; // reset background color
+    });
+
+    socket.on("connect", function(){
+        console.log("Connected to server via websocket.");
+        // send to socket that the requestedStage was handled
+        socket.emit("changeData", "overlay", "currentStage", localStateInformation.overlay.currentStage);
+    });
+
+    socket.on("entireConfig", (config) => {
+        // get the camera transition config
+        let transitionNum = config.camera.playTransition;
+        localStateInformation.camera.currentTransitionNumber = transitionNum;
+    })
+
+    socket.on("dataUpdated", (group, key, value) => {
+        if(group == "overlay"){
+            if(key == "requestedStage"){
+                // if there are waitframes left... then allow the change
+                if(localStateInformation.sponsor.waitFrames > 0){
+                    localStateInformation.overlay.requestedStage = value;
+                    return;
+                }
+                
+            }
+        }else if(group == "camera"){
+            if(key == "playTransition" && value != localStateInformation.camera.currentTransitionNumber){
+                // only play transition if not already transitioning
+                if(!localStateInformation.camera.isTransitioning){
+                    localStateInformation.camera.currentTransitionNumber = value;
+                    playCameraTransition();
+                }
+            }
+        }
+    });
+    
+</script>

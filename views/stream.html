@@ -1,0 +1,114 @@
+<html>
+    <head>
+        <title>Setup Stream</title>
+        <link rel="stylesheet" href="main.css"/>
+        <!-- socket.io script -->
+        <script src="/socket.io/socket.io.js"></script>
+    </head>
+    <body class="designed-background">
+        <div class="center-module">
+            <div class="container across-screen">
+                <div class="flex-center">
+                    <h1>Setup Stream</h1>
+
+                </div>
+                <div class="flex-center">
+                    <span>Sets up a stream with an OBS WebSocket</span>
+
+                </div>
+                <br/>
+                <div class="flex-center comfort-margin-top-bottom">
+                    <div class="flex-apart" style="width: 80%">
+                        <span>OBS WebSocket URL</span>
+                        <input name="obs-socket" onchange="testPingWebsocket()"/>
+                        <div name="obs-socket-connected" class="status-indicator" style="background-color: var(--error-color);"></div>
+                    </div>
+                </div>
+                <div class="flex-center comfort-margin-top-bottom">
+                    <div class="flex-apart" style="width: 80%">
+                        <span>RI3D@MTU WebSocket</span>
+                        <div name="ri3d-socket-connected" class="status-indicator" style="background-color: var(--error-color);"></div>
+                    </div>
+                </div>
+                
+                <br/>
+                <div class="flex-center">
+                    <button onclick="redirectToStreamPage()" name="start-button" class="bg-error"><h2>Begin Stream</h2></button>
+
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+
+        let socketIndicators = {
+            "ri3d-socket-connected": false,
+            "obs-socket-connected": false
+        }
+
+        let validObsUrl = "";
+
+        const socket = io();
+
+        function changeStartButtonState(){
+            if(socketIndicators["ri3d-socket-connected"] && socketIndicators["obs-socket-connected"]){
+                document.getElementsByName("start-button")[0].classList = "bg-success";
+            } else {
+                document.getElementsByName("start-button")[0].classList = "bg-error";
+            }
+        }
+
+        function changeStatusIndicator(indicatorElementName, isConnected) {
+            let indicatorElement = document.getElementsByName(indicatorElementName)[0];
+            socketIndicators[indicatorElementName] = isConnected;
+            if (isConnected) {
+                indicatorElement.style.backgroundColor = "var(--success-color)";
+            } else {
+                indicatorElement.style.backgroundColor = "var(--error-color)";
+            }
+            changeStartButtonState();
+        }
+
+        function testPingWebsocket(){
+            try{
+                let obsSocketUrl = document.getElementsByName("obs-socket")[0].value;
+                if(!(obsSocketUrl.startsWith("ws://") || obsSocketUrl.startsWith("wss://"))){
+                    obsSocketUrl = "ws://" + obsSocketUrl;
+                }
+                let ws = new WebSocket(obsSocketUrl);
+                ws.onopen = function() {
+                    changeStatusIndicator("obs-socket-connected", true);
+                    validObsUrl = obsSocketUrl;
+                    ws.close();
+                };
+                ws.onerror = function() {
+                    validObsUrl = "";
+                    changeStatusIndicator("obs-socket-connected", false);
+                };
+            }catch(e){
+                console.log("Error testing websocket: " + e);
+                changeStatusIndicator("obs-socket-connected", false);
+            }
+            
+        }
+
+        function redirectToStreamPage(){
+            if(validObsUrl != ""){
+                socket.emit("createObsManager", validObsUrl, "");
+            }
+            setTimeout(() => {
+                window.location.href = "/livestream";
+            }, 1000);
+            
+        }
+
+        socket.on('connect', () => {
+            changeStatusIndicator("ri3d-socket-connected", true);
+        });
+
+        socket.on('disconnect', () => {
+            changeStatusIndicator("ri3d-socket-connected", false);
+        });
+    </script>
+</html>
+

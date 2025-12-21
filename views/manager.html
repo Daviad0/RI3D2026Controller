@@ -1,0 +1,346 @@
+<html>
+    <head>
+        <title>Setup Stream</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+        <link rel="stylesheet" href="main.css"/>
+        <!-- socket.io script -->
+        <script src="/socket.io/socket.io.js"></script>
+    </head>
+    <body class="designed-background">
+        <div class="center-module">
+            <div class="container across-screen">
+                <div class="flex-apart" style="margin-bottom: 20px;">
+                    <div>
+                        <h2>Livestream Manager</h3>
+                        <span>Manages the Livestream</span>
+                    </div>
+                    <div class="status-indicator" name="ri3d-socket-connected"></div>
+
+                </div>
+                <hr/>
+                <div class="flex-apart comfort-margin-top-bottom" style="margin-top: 20px;">
+                    <h3>Requested Stage</h3>
+                    <div class="multi-buttons">
+                        <button onclick="selectMultiButton(event)" name="reqStage" value="panel-open" class="multi-button bg-secondary">Bar-Open</button>
+                        <button onclick="selectMultiButton(event)" name="reqStage" value="panel-closed" class="multi-button bg-secondary">Bar-Closed</button>
+                        <button onclick="selectMultiButton(event)" name="reqStage" value="panel-enlarged" class="multi-button bg-secondary">Large Panel</button>
+                    </div>
+                </div>
+                <div class="flex-apart comfort-margin-top-bottom">
+                    <h3>Stream Sound</h3>
+                    <div class="multi-buttons">
+                        <button onclick="selectMultiButton(event)" name="streamSound" value="muted" class="multi-button bg-secondary">Muted</button>
+                        <button onclick="selectMultiButton(event)" name="streamSound" value="obs" class="multi-button bg-secondary">OBS Managed Sound</button>
+                    </div>
+                </div>
+                <div class="flex-center comfort-margin-top-bottom" style="margin-bottom: 20px;">
+                    <span class="flex-center"><span name="view_current">panel-closed</span> <span class="material-symbols-outlined">arrow_forward</span> <span name="view_requested">panel-open</span></span>
+                </div>
+                <hr/>
+                <div class="flex-apart comfort-margin-top-bottom" style="margin-top: 20px;">
+                    <h3>Camera Transition</h3>
+                    <button onclick="playCameraTransition()" class="bg-secondary">Play Transition</button>
+                </div>
+                <div class="flex-apart comfort-margin-top-bottom">
+                    <h3>Available Cameras</h3>
+                    <input onchange="changeAvailableCamerasList()" type="text" name="availableCams" style="width: 300px;" value=""/>
+                </div>
+                <div class="flex-apart comfort-margin-top-bottom">
+                    <h3>Show Camera Previews</h3>
+                    <div class="multi-buttons">
+                        <button onclick="selectMultiButton(event)" name="showCamPreviews" value="off" class="multi-button bg-secondary">Hidden</button>
+                        <button onclick="selectMultiButton(event)" name="showCamPreviews" value="names" class="multi-button bg-secondary">Names</button>
+                        <button onclick="selectMultiButton(event)" name="showCamPreviews" value="images" class="multi-button bg-secondary">Images</button>
+                    </div>
+                </div>
+                <div class="flex-center" name="cameraPreviews">
+                    
+                </div>
+                
+
+                
+            </div>
+        </div>
+    </body>
+    <script>
+
+        const socket = io();
+
+        let dataMapping = {
+            "reqStage": () => {
+                // depends on the muted state
+                let stage = selectedOptions["reqStage"];
+                let sound = selectedOptions["streamSound"];
+
+                let workingStageName = stage;
+
+                if(stage != "panel-enlarged"){
+                    if(sound == "muted"){
+                        workingStageName += "-muted";
+                    }
+                }
+
+                // if this is the SAME as current stage, then do nothing
+                if(workingStageName == selectedOptions["curStage"]){
+                    return;
+                }
+
+                updateRequestedView(workingStageName);
+
+                // now push to socket
+                socket.emit("changeData", "overlay", "requestedStage", workingStageName);
+            },
+            "streamSound": () => {
+
+                // if the requested is null, then take the current
+
+                let stage = selectedOptions["reqStage"];
+                if(stage == null){
+                    selectedOptions["reqStage"] = selectedOptions["curStage"];
+                }
+
+                // just rerun the reqStage logic
+                dataMapping["reqStage"]();
+            },
+            "transitionNum": () => {
+                let transitionNum = selectedOptions["transitionNum"];
+                socket.emit("changeData", "camera", "playTransition", transitionNum);
+            },
+            "showCamPreviews": () => {
+                let showCamPreviews = selectedOptions["showCamPreviews"];
+                let cameraPreviewsContainer = document.getElementsByName("cameraPreviews")[0];
+                
+                if(showCamPreviews == "images"){
+                    cameraPreviewsContainer.style.display = "flex";
+                }else{
+                    cameraPreviewsContainer.style.display = "none";
+                }
+
+                socket.emit("changeData", "camera", "preview", showCamPreviews);
+            },
+            "availableCams": () => {
+                let availableCams = selectedOptions["availableCams"];
+                socket.emit("changeData", "camera", "available", availableCams);
+            }
+        }
+
+        let isRequest = ["reqStage", "streamSound"];
+
+        let selectedOptions = {
+            "reqStage": null,
+            "streamSound": null,
+            "curStage": null,
+            "showCamPreviews": null,
+            "availableCams": null,
+            "transitionNum": 0
+        }
+
+        function updateRequestedView(toRequested){
+            let reqViewElement = document.getElementsByName("view_requested")[0];
+            let currViewElement = document.getElementsByName("view_current")[0];
+
+            // if no current requested, then just set to N/A
+
+            if(toRequested == null || !toRequested){
+                toRequested = "N/A";
+            }
+
+            let current = selectedOptions["curStage"];
+            if(current == null || !current){
+                current = "N/A";
+            }
+
+            reqViewElement.innerText = toRequested;
+            currViewElement.innerText = current;
+        }
+
+        function selectMultiButton(ev){
+            let button = ev.currentTarget;
+            let name = button.getAttribute("name");
+            let value = button.getAttribute("value");
+
+            // update selected options
+            selectedOptions[name] = value;
+
+            // update button styles
+            let buttons = document.getElementsByName(name);
+            let addRequestClass = isRequest.includes(name) ? "request-anim" : "";
+            buttons.forEach((btn) => {
+                if(btn === button){
+                    btn.classList = "multi-button bg-primary " + addRequestClass;
+                } else {
+                    btn.classList = "multi-button bg-secondary";
+                }
+            });
+
+            let dataFunc = dataMapping[name];
+            if(dataFunc){
+                dataFunc();
+            }
+
+            // send to socket
+            // socket.emit("changeData", "manager", name, value);
+        }
+
+        function changeAvailableCamerasList(){
+            let inputElement = document.getElementsByName("availableCams")[0];
+            let cameras = inputElement.value.split(",").map(cam => cam.trim());
+            selectedOptions["availableCams"] = cameras;
+            dataMapping["availableCams"]();
+            updateCameraPreviews();
+        }
+
+        function updateCameraPreviews(){
+            let cameras = selectedOptions["availableCams"];
+            let previewContainer = document.getElementsByName("cameraPreviews")[0];
+            previewContainer.innerHTML = "";
+
+            let cameraTemplate =
+            `
+            <div class="camera" value="{CAMERA_NAME}">
+                <img name="preview" onerror="this.src = 'previews/nocamera.png';" src="previews/nocamera.png"/>
+                <div class="flex-center">
+                    <span>{CAMERA_NAME}</span>
+                </div>
+                
+            </div>
+            `
+
+            cameras.forEach((camName) => {
+                let camDivHTML = cameraTemplate.replaceAll(/{CAMERA_NAME}/g, camName);
+                previewContainer.innerHTML += camDivHTML;
+            });
+        }
+
+        function playCameraTransition(){
+            let transitionNum = selectedOptions["transitionNum"];
+            transitionNum = parseInt(transitionNum);
+            transitionNum += 1;
+            selectedOptions["transitionNum"] = transitionNum;
+            dataMapping["transitionNum"]();
+        }
+
+        function changeStatusIndicator(indicatorElementName, isConnected) {
+            let indicatorElement = document.getElementsByName(indicatorElementName)[0];
+            if (isConnected) {
+                indicatorElement.style.backgroundColor = "var(--success-color)";
+            } else {
+                indicatorElement.style.backgroundColor = "var(--error-color)";
+            }
+        }
+
+        socket.on('connect', () => {
+            changeStatusIndicator("ri3d-socket-connected", true);
+        });
+
+        socket.on('disconnect', () => {
+            changeStatusIndicator("ri3d-socket-connected", false);
+        });
+
+        function reactToDataChange(group, key, value){
+            if(group == "overlay"){
+                if(key == "currentStage"){
+                    // parse the information to get what's currently selected
+                    let buttonToTarget = "";
+                    if(value.includes("panel-enlarged")){
+                        buttonToTarget = "panel-enlarged";
+                    } else if(value.includes("panel-open")){
+                        buttonToTarget = "panel-open";
+                    } else if(value.includes("panel-closed")){
+                        buttonToTarget = "panel-closed";
+                    }
+
+                    
+
+                    selectedOptions["curStage"] = value;
+                    updateRequestedView(value);
+
+                    if(buttonToTarget != ""){
+                        let buttons = document.getElementsByName("reqStage");
+                        buttons.forEach((btn) => {
+                            let val = btn.getAttribute("value");
+                            if(val === buttonToTarget){
+                                btn.classList = "multi-button bg-success";
+                            }
+                        });
+                    }
+
+                    let sound = "obs";
+                    // if contains muted, then also set sound to muted
+                    if(value.includes("muted")){
+                        sound = "muted";
+                    }
+
+                    selectedOptions["streamSound"] = sound;
+
+                    let buttons = document.getElementsByName("streamSound");
+                    buttons.forEach((btn) => {
+                        let val = btn.getAttribute("value");
+                        if(val === sound){
+                            btn.classList = "multi-button bg-success";
+                        }
+                    });
+                }
+            }else if(group == "camera"){
+                if(key == "playTransition"){
+                    // update so we have it for later
+                    selectedOptions["transitionNum"] = value;
+                }else if(key == "available"){
+                    selectedOptions["availableCams"] = value;
+                    let inputElement = document.getElementsByName("availableCams")[0];
+                    inputElement.value = value.join(", ");
+                    updateCameraPreviews();
+                }else if(key == "preview"){
+                    selectedOptions["showCamPreviews"] = value;
+
+                    let buttons = document.getElementsByName("showCamPreviews");
+                    buttons.forEach((btn) => {
+                        let val = btn.getAttribute("value");
+                        if(val === value){
+                            btn.classList = "multi-button bg-primary";
+                        }
+                    });
+                }
+            }
+        }
+        
+
+        socket.on("dataUpdated", (group, key, value) => {
+            reactToDataChange(group, key, value);
+        });
+
+        socket.on("entireConfig", (config) => {
+
+            // set initial states
+            let currentStage = config.overlay.currentStage;
+            reactToDataChange("overlay", "currentStage", currentStage);
+
+            let transitionNum = config.camera.playTransition;
+            selectedOptions["transitionNum"] = transitionNum;
+
+            let preview = config.camera.preview;
+            reactToDataChange("camera", "preview", preview);
+
+            let availableCams = config.camera.available;
+            selectedOptions["availableCams"] = availableCams;
+            reactToDataChange("camera", "available", availableCams);
+        });
+
+        setInterval(() => {
+            let previewImage = document.getElementsByName("preview")[0];
+            let showCamPreviews = selectedOptions["showCamPreviews"];
+            if(showCamPreviews == "images"){
+                // go through each div named camera and update the image
+                let cameraDivs = document.getElementsByClassName("camera");
+                for(let i = 0; i < cameraDivs.length; i++){
+                    let camDiv = cameraDivs[i];
+                    let camName = camDiv.getAttribute("value");
+                    let imgElement = camDiv.getElementsByTagName("img")[0];
+                    imgElement.src = "previews/" + camName + ".jpg?t=" + new Date().getTime();
+                }
+            }
+        }, 4000);
+    </script>
+</html>
+

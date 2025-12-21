@@ -1,0 +1,35 @@
+{
+  "playTransition": 34,
+  "available": [
+    "ITCam1",
+    "ITCam2"
+  ],
+  "preview": "images",
+  "manager": "ws://127.0.0.1:4455",
+  "configured": [
+    {
+      "id": "563b93e0",
+      "name": "Camera 1",
+      "url": "http://streamingwebcams.mtu.edu:1935/rtplive/camera051-high.stream/playlist.m3u8",
+      "x": "0",
+      "y": "0",
+      "width": "400",
+      "height": 1080,
+      "type": "web"
+    },
+    {
+      "id": "7c91e88c",
+      "name": "Camera 2",
+      "url": "http://streamingwebcams.mtu.edu:1935/rtplive/camera052-high.stream/playlist.m3u8",
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "type": "unknown"
+    }
+  ],
+  "livePreview": {
+    "id": "563b93e0",
+    "preview": null
+  }
+}
