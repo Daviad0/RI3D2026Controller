@@ -90,7 +90,7 @@ button.small-button{
     animation: request-active-container 1s infinite;
 }
 
-input{
+input, textarea{
     border: 2px solid var(--secondary-color);
     border-radius: 8px;
     padding: 8px;
@@ -187,8 +187,9 @@ input:active, input:focus{
 
 .container.across-screen{
     width: 80vw;
-    max-width: 600px;
+    max-width: 800px;
 }
+
 
 .container.two-column{
     width: 40vw;
@@ -212,6 +213,16 @@ span{
 .camera.bg-primary .show-preview{
     background-color: var(--primary-color) !important;
     color: var(--secondary-color) !important;
+}
+
+.document{
+    padding: 5px;
+    border-radius: 8px;
+}
+
+button:disabled{
+    filter: brightness(0.6);
+    cursor: not-allowed;
 }
 
 

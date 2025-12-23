@@ -35,6 +35,9 @@ app.get(basePath + '/scenes', (req, res) => {
 app.get(basePath + '/manager', (req, res) => {
     res.sendFile(__dirname + '/views/manager.html');
 });
+app.get(basePath + '/documents', (req, res) => {
+    res.sendFile(__dirname + '/views/documents.html');
+});
 app.get(basePath + '/bigtimer', (req, res) => {
     res.sendFile(__dirname + '/views/bigtimer.html');
 });
@@ -96,6 +99,9 @@ let globalConfig = {
     },
     scene_index_mapping: { // automatically filled on OBS connection
 
+    },
+    constants: {
+        publicDocumentsLink: "https://drive.google.com/drive/u/0/folders/1N6PCUuDWNRrZHfQ6jIBQx7Wa8wZkaUfx"
     }
 };
 
@@ -113,7 +119,7 @@ async function readConfig(group) {
     return JSON.parse(data);
 }
 
-const DO_NOT_WRITE= ["obs_state", "scene_index_mapping"];
+const DO_NOT_WRITE= ["obs_state", "scene_index_mapping", "constants"];
 
 async function writeConfig(config, group) {
     if(DO_NOT_WRITE.includes(group)) return;
