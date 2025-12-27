@@ -41,6 +41,12 @@ app.get(basePath + '/documents', (req, res) => {
 app.get(basePath + '/bigtimer', (req, res) => {
     res.sendFile(__dirname + '/views/bigtimer.html');
 });
+app.get(basePath + '/schedule', (req, res) => {
+    res.sendFile(__dirname + '/views/schedule.html');
+});
+app.get(basePath + '/home', (req, res) => {
+    res.sendFile(__dirname + '/views/home.html');
+});
 
 const reaction_groups = {
     "camera": (key, value) => reaction_camera.handleReaction(key, value, globalConfig, obsManager)
@@ -64,6 +70,14 @@ let globalConfig = {
         manager: null,
         activeSceneRequest: {},
         sceneRequest: {}
+    },
+    documents: {
+        documents: {}
+    },
+    schedule: {
+        scheduleItems: {},
+        activeScheduleItems: [],
+        additionalScheduleNotes: ""
     },
     obs_state: {
         scenesToTarget: [ // set MANUALLY - mimiced in obs-connection.js
@@ -101,7 +115,8 @@ let globalConfig = {
 
     },
     constants: {
-        publicDocumentsLink: "https://drive.google.com/drive/u/0/folders/1N6PCUuDWNRrZHfQ6jIBQx7Wa8wZkaUfx"
+        publicDocumentsLink: "https://drive.google.com/drive/u/0/folders/1N6PCUuDWNRrZHfQ6jIBQx7Wa8wZkaUfx",
+        publicCalendarLink: "https://calendar.google.com/calendar/embed?src=c_6ad2a24c07de8545d32333b8289aa930a0f82c4e274e1b482afca4f8f9db0df7%40group.calendar.google.com&ctz=America%2FDetroit"
     }
 };
 

@@ -8,6 +8,14 @@
         <script src="/ri3d26/socket.io/socket.io.js"></script>
     </head>
     <body class="designed-background">
+        <div class="quick-options">
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/home'">home</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/scenes'">camera_video</button>
+            <button class="material-symbols-outlined selected" onclick="window.location.href = '/ri3d26/manager'">wall_art</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/documents'">files</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/schedule'">avg_time</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/livestream'">preview</button>
+        </div>
         <div class="center-module">
             <div class="container across-screen">
                 <div class="flex-apart" style="margin-bottom: 20px;">
@@ -18,8 +26,20 @@
                     <div class="status-indicator" name="ri3d-socket-connected"></div>
 
                 </div>
+                <div class="warning-box comfort-margin-top-bottom flex-apart" name="overlay-warning">
+                    <span class="small-label material-symbols-outlined">warning</span>
+                    <span class="small-label" style="flex:1">The overlay manager will not affect the stream as the proper scene is not selected. Any changes made will take effect when a proper scene is shown.</span>
+
+                </div>
                 <hr/>
                 <div class="flex-apart comfort-margin-top-bottom" style="margin-top: 20px;">
+                    <h3>Hide Overlay</h3>
+                    <div class="multi-buttons">
+                        <button onclick="selectMultiButton(event)" name="hideOverlay" value="hidden" class="multi-button bg-secondary">Hidden</button>
+                        <button onclick="selectMultiButton(event)" name="hideOverlay" value="visible" class="multi-button bg-secondary">Visible</button>
+                    </div>
+                </div>
+                <div class="flex-apart comfort-margin-top-bottom">
                     <h3>Requested Stage</h3>
                     <div class="multi-buttons">
                         <button onclick="selectMultiButton(event)" name="reqStage" value="panel-open" class="multi-button bg-secondary">Bar-Open</button>
@@ -43,19 +63,16 @@
                     <button onclick="playCameraTransition()" class="bg-secondary">Play Transition</button>
                 </div>
                 <div class="flex-apart comfort-margin-top-bottom">
-                    <h3>Available Cameras</h3>
-                    <input onchange="changeAvailableCamerasList()" type="text" name="availableCams" style="width: 300px;" value=""/>
-                </div>
-                <div class="flex-apart comfort-margin-top-bottom">
-                    <h3>Show Camera Previews</h3>
+                    <h3>Clock Mode</h3>
                     <div class="multi-buttons">
-                        <button onclick="selectMultiButton(event)" name="showCamPreviews" value="off" class="multi-button bg-secondary">Hidden</button>
-                        <button onclick="selectMultiButton(event)" name="showCamPreviews" value="names" class="multi-button bg-secondary">Names</button>
-                        <button onclick="selectMultiButton(event)" name="showCamPreviews" value="images" class="multi-button bg-secondary">Images</button>
+                        <button onclick="selectMultiButton(event)" name="clockMode" value="disabled" class="multi-button bg-secondary">Disabled</button>
+                        <button onclick="selectMultiButton(event)" name="clockMode" value="time" class="multi-button bg-secondary">Time</button>
+                        <button onclick="selectMultiButton(event)" name="clockMode" value="countdown" class="multi-button bg-secondary">Countdown</button>
                     </div>
                 </div>
-                <div class="flex-center" name="cameraPreviews">
-                    
+                <div class="flex-apart comfort-margin-top-bottom">
+                    <h3>Countdown Target</h3>
+                    <input type="datetime-local" name="countdownTarget" style="width: 300px;" value=""/>
                 </div>
                 
 
@@ -135,8 +152,11 @@
             "curStage": null,
             "showCamPreviews": null,
             "availableCams": null,
-            "transitionNum": 0
+            "transitionNum": 0,
+            "clockMode": null
         }
+
+        let currentScene = null;
 
         function updateRequestedView(toRequested){
             let reqViewElement = document.getElementsByName("view_requested")[0];
@@ -157,13 +177,35 @@
             currViewElement.innerText = current;
         }
 
+        function updateWarningPerCurrentScene(){
+            // only the Passive or TwoCamera
+            let allowableScenes = ["Passive", "TwoCamera"]; 
+            let warningBox = document.getElementsByName("overlay-warning")[0];
+            if(allowableScenes.includes(currentScene)){
+                warningBox.style.display = "none";
+            } else {
+                warningBox.style.display = "";
+            }
+        }
+
         function selectMultiButton(ev){
             let button = ev.currentTarget;
             let name = button.getAttribute("name");
             let value = button.getAttribute("value");
 
+            // IF the name is reqStage and the value is not bar-closed, then show a warning
+            if(name == "reqStage" && currentScene == "TwoCamera"){
+                if(value != "panel-closed"){
+                    let result = alert("Warning: Selecting a stage other than 'Bar-Closed' may obscure parts of the livestream for viewers. Are you sure you want to proceed?");
+                    if(!result){
+                        return;
+                    }
+                }
+            }
+
             // update selected options
             selectedOptions[name] = value;
+            
 
             // update button styles
             let buttons = document.getElementsByName(name);
@@ -304,6 +346,11 @@
                         }
                     });
                 }
+            }else if(group == "obs_state"){
+                if(key == "currentScene"){
+                    currentScene = value;
+                    updateWarningPerCurrentScene();
+                }
             }
         }
         
@@ -327,6 +374,9 @@
             let availableCams = config.camera.available;
             selectedOptions["availableCams"] = availableCams;
             reactToDataChange("camera", "available", availableCams);
+
+            let currentScene = config.obs_state.currentScene;
+            reactToDataChange("obs_state", "currentScene", currentScene);
         });
 
         setInterval(() => {

@@ -124,6 +124,7 @@ input:active, input:focus{
     justify-content: center;
     align-items: start;
     position: absolute;
+    max-width: 80vw;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -247,4 +248,53 @@ button:disabled{
 .tiny-label{
     font-size: 0.8em;
     margin-bottom: 5px;
+}
+
+.small-label{
+    font-size: .9em;
+}
+
+.warning-box{
+    border: 2px solid var(--error-color);
+    background-color: #ffe6e6;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.large-home-button{
+    height: 20vw;
+    width: 20vw;
+    border-radius: 20px;
+    background-color: var(--background-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.large-icon{
+    font-size: 10vw;
+}
+
+.quick-options{
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    padding: 10px;
+    background-color: var(--background-color);
+    border-top-right-radius: 16px;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.quick-options button{
+    margin-right: 10px;
+    background-color: transparent;
+    padding: 5px;
+    margin: 0px;
+}
+
+.quick-options button.selected, .quick-options button:hover{
+    background-color: var(--primary-color);
 }

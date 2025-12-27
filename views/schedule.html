@@ -1,0 +1,699 @@
+<html>
+    <head>
+        <title>Schedule Manager</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+        <link rel="stylesheet" href="main.css"/>
+        <!-- socket.io script -->
+        <script src="/ri3d26/socket.io/socket.io.js"></script>
+    </head>
+    <body class="designed-background">
+        <div class="quick-options">
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/home'">home</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/scenes'">camera_video</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/manager'">wall_art</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/documents'">files</button>
+            <button class="material-symbols-outlined selected" onclick="window.location.href = '/ri3d26/schedule'">avg_time</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/livestream'">preview</button>
+        </div>
+        <div class="center-module">
+            <div class="container two-column">
+                <div class="flex-apart" style="margin-bottom: 20px;">
+                    <div>
+                        <h2>Schedule Manager</h3>
+                        <span>Manages the Scheduled Events</span>
+                    </div>
+                    
+                    <div class="status-indicator" name="ri3d-socket-connected"></div>
+
+                    <button onclick="addScheduleItem()" class="bg-secondary small-button material-symbols-outlined">add</button>
+
+
+                </div>
+                <hr/>
+                <div class="flex-apart comfort-margin-top-bottom" style="margin-top: 20px;margin-bottom: 20px;">
+                    <h3>Google Calendar</h3>
+                    <button onclick="openPublicCalendarLInk()" class="bg-secondary">Go to Google Calendar</button>
+                </div>
+                <div class="warning-box comfort-margin-top-bottom flex-apart">
+                    <span class="small-label material-symbols-outlined">warning</span>
+                    <span class="small-label" style="flex:1">Do not add items directly on the Google Calendar! Making changes on here will result in periodic changes to the public calendar. The Google Calendar is only for public access and notifications of RI3D@MTU events!</span>
+
+                </div>
+                <hr/>
+                <div class="flex-apart" style="margin-top: 20px;">
+                    <span class="tiny-label" style="flex:1">Schedule Name</span>
+                    <span class="tiny-label" style="flex:1">Start - End Time</span>
+                    <span class="tiny-label" style="flex:1">Actions</span>
+                </div>
+                <div class="sub-scroll" name="scheduleItems">
+                    
+                </div>
+
+                <div name="scheduleItem-management">
+                    <hr style="margin-top: 20px;"/>
+                    <div style="margin-top: 20px;">
+                        <div class="flex-center">
+                            <h3>Manage Schedule Item Details</h3>
+                        </div>
+                        <div class="flex-center">
+                            <span name="scheduleItem-management-selected">Schedule Item #id</span>
+                        </div>
+                        <br/>
+
+                        <div class="flex-apart comfort-margin-top-bottom">
+                            <h3>Event Name</h3>
+                            <input onchange="changeScheduleItemDetailsOfSelected(event)" type="text" name="name" placeholder="Public Update Meeting" style="width: 300px;" value=""/>
+                        </div>
+                        <div class="flex-apart comfort-margin-top-bottom">
+                            <h3>Event Type</h3>
+                            <div class="multi-buttons">
+                                <button onclick="selectMultiButton(event)" name="eventType" value="work" class="multi-button bg-secondary">Work Time</button>
+                                <button onclick="selectMultiButton(event)" name="eventType" value="break" class="multi-button bg-secondary">Break</button>
+                                <button onclick="selectMultiButton(event)" name="eventType" value="meeting" class="multi-button bg-secondary">Meeting</button>
+                                <button onclick="selectMultiButton(event)" name="eventType" value="event" class="multi-button bg-secondary">Large Event</button>
+                                <button onclick="selectMultiButton(event)" name="eventType" value="other" class="multi-button bg-secondary">Other Event</button>
+                            </div>
+                        </div>
+                        <div class="flex-apart comfort-margin-top-bottom">
+                            <h3>Event Visibility</h3>
+                            <div class="multi-buttons">
+                                <button onclick="selectMultiButton(event)" name="eventVisibility" value="hidden" class="multi-button bg-secondary">Hidden</button>
+                                <button onclick="selectMultiButton(event)" name="eventVisibility" value="livestream" class="multi-button bg-secondary">Livestream Only</button>
+                                <button onclick="selectMultiButton(event)" name="eventVisibility" value="calendar" class="multi-button bg-secondary">Calendar Only</button>
+                                <button onclick="selectMultiButton(event)" name="eventVisibility" value="visible" class="multi-button bg-secondary">Visible</button>
+                            </div>
+                        </div>
+                        <div class="flex-apart comfort-margin-top-bottom">
+                            <h3>Event Start</h3>
+                            <input onchange="changeScheduleItemDetailsOfSelected(event)" type="datetime-local" name="startTime"  style="width: 300px;" value=""/>
+                        </div>
+                        <div class="flex-apart comfort-margin-top-bottom">
+                            <h3>Event End</h3>
+                            <input onchange="changeScheduleItemDetailsOfSelected(event)" type="datetime-local" name="endTime"  style="width: 300px;" value=""/>
+                        </div>
+                        <div class="flex-apart comfort-margin-top-bottom">
+                            <h3>Event Notes</h3>
+                            <textarea onchange="changeScheduleItemDetailsOfSelected(event)" name="notes" placeholder="This event has notes" style="width: 300px;" value=""></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+
+                
+            </div>
+            <div class="container two-column">
+                <div class="flex-apart" style="margin-bottom: 20px;">
+                    <div>
+                        <h2>Active Schedule Items</h3>
+                        <span>Manage active schedule informationon the livestream</span>
+                        <span><i>Maximum 3 schedule items</i></span>
+                    </div>
+                    
+
+                    <button onclick="removeAllActiveScheduleItems()" class="bg-secondary small-button material-symbols-outlined">delete_sweep</button>
+
+
+                </div>
+                <hr/>
+                <div class="flex-apart" style="margin-top: 20px;">
+                    <span class="tiny-label" style="flex:1">Schedule Name</span>
+                    <span class="tiny-label" style="flex:1">Start - End Time</span>
+                    <span class="tiny-label" style="flex:1">Actions</span>
+                </div>
+                <div class="sub-scroll" name="scheduleItemsActive" style="margin-bottom: 20px;">
+                    
+                </div>
+                <hr/>
+                <div class="flex-apart comfort-margin-top-bottom" style="margin-top:20px">
+                    <h3>What We're Working On</h3>
+                    <textarea onchange="updateServerWithActiveScheduleItems()" name="additionalDescription" style="width: 300px;resize:none" value=""></textarea>
+                </div>
+                
+
+                
+            </div>
+        </div>
+    </body>
+    <script>
+
+        const socket = io(window.location.host, {
+            path: "/ri3d26/socket.io"
+        });
+
+        let scheduleManagement = {
+            selectedId: null,
+            googleCalendarLink: "",
+            activeScheduleItems: [] // just ids
+        }
+        let scheduleItems = [];
+        let scheduleItemHtml = `
+        <div style="flex:1;justify-content:start" class="flex-center">
+            <h4 name="name">INSERT_NAME</h4>
+            <span name="visible" class="tiny-label material-symbols-outlined" style="display:inline-block;">visibility_off</span>
+        </div>
+        <div style="flex:1;justify-content:start" class="flex-center">
+            <div class="tiny-label text-label bg-secondary flex-center" style="margin:0px;gap:5px"><span class="material-symbols-outlined tiny-label" style="display:inline-block;margin:0px" name="icon">INSERT_ICON</span><span style="display:inline-block" name="type">INSERT_TYPE</span></div>
+            <span name="date" class="tiny-label" style="margin:0px;display:inline-block;">No Date</span>
+        </div>
+        <div style="flex:1">
+            <div class="flex-center" style="gap:5px;justify-content: start;">
+                <button class="bg-secondary small-button material-symbols-outlined show-preview" onclick="chooseScheduleItemForManagement('INSERT_ID')">table_eye</button>
+                <button class="bg-secondary small-button material-symbols-outlined" name="show" onclick="moveScheduleItemToActive('INSERT_ID')">live_tv</button>
+                <button class="bg-error small-button material-symbols-outlined" onclick="deleteScheduleItem('INSERT_ID')">delete</button>
+            </div>
+        </div>
+        `;
+
+        let scheduleItemActiveHtml = `
+        <div style="flex:1;justify-content:start" class="flex-center">
+            <h4 name="name">INSERT_NAME</h4>
+        </div>
+        <div style="flex:1;justify-content:start" class="flex-center">
+            <div class="tiny-label text-label bg-secondary flex-center" style="margin:0px;gap:5px"><span class="material-symbols-outlined tiny-label" style="display:inline-block;margin:0px" name="icon">INSERT_ICON</span><span style="display:inline-block" name="type">INSERT_TYPE</span></div>
+            <span name="date" class="tiny-label" style="margin:0px;display:inline-block;">No Date</span>
+        </div>
+        <div style="flex:1">
+            <div class="flex-center" style="gap:5px;justify-content: start;">
+                <button class="bg-secondary small-button material-symbols-outlined" onclick="removeScheduleItemFromActive('INSERT_ID')" name="hide">backspace</button>
+            </div>
+        </div>
+        `;
+
+        let dataMapping = {
+            "eventType": () => {
+                let schedId = scheduleManagement.selectedId;
+                if(schedId == null){
+                    return;
+                }
+                let scheduleItemIndex = scheduleItems.findIndex((sched) => sched.id == schedId);
+                if(scheduleItemIndex == -1){
+                    return;
+                }
+                let selectedType = selectedOptions["eventType"]["selected"];
+                scheduleItems[scheduleItemIndex]["type"] = selectedType;
+
+                updateScheduleItemInList(schedId);
+            },
+            "eventVisibility": () => {
+                let schedId = scheduleManagement.selectedId;
+                if(schedId == null){
+                    return;
+                }
+                let scheduleItemIndex = scheduleItems.findIndex((sched) => sched.id == schedId);
+                if(scheduleItemIndex == -1){
+                    return;
+                }
+                let selectedVisibility = selectedOptions["eventVisibility"]["selected"];
+                scheduleItems[scheduleItemIndex]["visibility"] = selectedVisibility;
+
+                updateScheduleItemInList(schedId);
+            }
+        }
+
+        let scheduleItemTypeIconMapping = {
+            "work": "exercise",
+            "break": "bedtime",
+            "meeting": "groups",
+            "event": "local_activity",
+            "other": "event"
+        };
+
+        let isRequest = ["reqStage", "streamSound"];
+
+        let selectedOptions = {
+            "eventType": {
+                before: null,
+                selected: null,
+                priority: "selected"
+            },
+            "eventVisibility": {
+                before: null,
+                selected: null,
+                priority: "selected"
+            }
+        }
+
+        function updateRequestedView(toRequested){
+            let reqViewElement = document.getElementsByName("view_requested")[0];
+            let currViewElement = document.getElementsByName("view_current")[0];
+
+            // if no current requested, then just set to N/A
+
+            if(toRequested == null || !toRequested){
+                toRequested = "N/A";
+            }
+
+            let current = selectedOptions["curStage"];
+            if(current == null || !current){
+                current = "N/A";
+            }
+
+            reqViewElement.innerText = toRequested;
+            currViewElement.innerText = current;
+        }
+
+        function multiButtonSelect(name, value, target="selected"){
+            // selected is bg-primary
+            // before is bg-success
+            // others are bg-secondary
+
+            // if isReqest, then add request-anim class
+            let buttons = document.getElementsByName(name);
+            let addRequestClass = isRequest.includes(name) ? "request-anim" : "";
+            selectedOptions[name][target] = value;
+            let selectedOptionBefore = selectedOptions[name]["before"];
+            let selectedOptionSelected = selectedOptions[name]["selected"];
+            let selectedOptionPriority = selectedOptions[name]["priority"];
+            buttons.forEach((btn) => {
+                let val = btn.getAttribute("value");
+
+                if(selectedOptionPriority == "before"){
+                    if(val === selectedOptionBefore){
+                        btn.classList = "multi-button bg-success ";
+                    } else if(val === selectedOptionSelected){
+                        btn.classList = "multi-button bg-primary " + addRequestClass;
+                    } else {
+                        btn.classList = "multi-button bg-secondary";
+                    }
+                }else{
+                    // selected is default
+                    if(val === selectedOptionSelected){
+                        btn.classList = "multi-button bg-primary " + addRequestClass;
+                    } else if(val === selectedOptionBefore){
+                        btn.classList = "multi-button bg-success";
+                    } else {
+                        btn.classList = "multi-button bg-secondary";
+                    }
+                }
+            });
+
+            if(target == "before"){
+                setupSceneOptions("before");
+            }
+        }
+
+        function selectMultiButton(ev){
+            let button = ev.currentTarget;
+            let name = button.getAttribute("name");
+            let value = button.getAttribute("value");
+
+            multiButtonSelect(name, value, "selected");
+
+            let dataFunc = dataMapping[name];
+            if(dataFunc){
+                dataFunc();
+            }
+        }
+
+        function changeStatusIndicator(indicatorElementName, isConnected) {
+            let indicatorElement = document.getElementsByName(indicatorElementName)[0];
+            if (isConnected) {
+                indicatorElement.style.backgroundColor = "var(--success-color)";
+            } else {
+                indicatorElement.style.backgroundColor = "var(--error-color)";
+            }
+        }
+
+        function generateUUID() {
+            // generate in the form of xxxxxxxx
+            return 'xxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function addVisualScheduleItem_active(id, name, type, startTime, endTime){
+            let scheduleItemsContainer = document.getElementsByName("scheduleItemsActive")[0];
+            let scheduleItemDiv = document.createElement("div");
+            scheduleItemDiv.classList = "flex-apart scheduleItem";
+            scheduleItemDiv.setAttribute("name", "scheduleItem");
+            scheduleItemDiv.setAttribute("value", id);
+            scheduleItemDiv.style.marginBottom = "5px";
+            let schedHtmlToInsert = scheduleItemActiveHtml.replaceAll("INSERT_ID", id);
+            schedHtmlToInsert = schedHtmlToInsert.replaceAll("INSERT_NAME", name);
+            schedHtmlToInsert = schedHtmlToInsert.replaceAll("INSERT_TYPE", type);
+            scheduleItemDiv.innerHTML = schedHtmlToInsert;
+            scheduleItemsContainer.appendChild(scheduleItemDiv);
+
+            updateActiveScheduleItemInList(id);
+        }
+
+        function addVisualScheduleItem(id, name, type, startTime, endTime){
+            let scheduleItemsContainer = document.getElementsByName("scheduleItems")[0];
+            let scheduleItemDiv = document.createElement("div");
+            scheduleItemDiv.classList = "flex-apart scheduleItem";
+            scheduleItemDiv.setAttribute("name", "scheduleItem");
+            scheduleItemDiv.setAttribute("value", id);
+            scheduleItemDiv.style.marginBottom = "5px";
+            let schedHtmlToInsert = scheduleItemHtml.replaceAll("INSERT_ID", id);
+            schedHtmlToInsert = schedHtmlToInsert.replaceAll("INSERT_NAME", name);
+            schedHtmlToInsert = schedHtmlToInsert.replaceAll("INSERT_TYPE", type);
+            scheduleItemDiv.innerHTML = schedHtmlToInsert;
+            scheduleItemsContainer.appendChild(scheduleItemDiv);
+
+            updateScheduleItemInList(id);
+        }
+
+        function moveScheduleItemToActive(id){
+            let scheduleItemIndex = scheduleItems.findIndex((sched) => sched.id == id);
+            if(scheduleItemIndex == -1){
+                return;
+            }
+            let sched = scheduleItems[scheduleItemIndex];
+
+            // check if there are more than 3 active items
+            if(scheduleManagement.activeScheduleItems.length >= 3){
+                alert("Cannot add more than 3 active schedule items!");
+                return;
+            }
+
+            scheduleManagement.activeScheduleItems.push(id);
+
+            // add to active list
+            addVisualScheduleItem_active(sched.id, sched.name, sched.type, sched.startTime, sched.endTime);
+
+            updateServerWithActiveScheduleItems();
+        }
+
+        function removeScheduleItemFromActive(id){
+            // remove from activeScheduleItems array
+            scheduleManagement.activeScheduleItems = scheduleManagement.activeScheduleItems.filter((schedId) => schedId != id);
+
+            // remove from visual
+            let schedulesContainer = document.getElementsByName("scheduleItemsActive")[0];
+            let scheduleItemDivs = schedulesContainer.getElementsByClassName("scheduleItem");
+            for(let i = 0; i < scheduleItemDivs.length; i++){
+                let schedDiv = scheduleItemDivs[i];
+                let schedId = schedDiv.getAttribute("value");
+                if(schedId == id){
+                    schedulesContainer.removeChild(schedDiv);
+                    break;
+                }
+            }
+
+            updateServerWithActiveScheduleItems();
+        }
+        
+        function removeAllActiveScheduleItems(){
+            let schedulesContainer = document.getElementsByName("scheduleItemsActive")[0];
+            schedulesContainer.innerHTML = "";
+            scheduleManagement.activeScheduleItems = [];
+
+            updateServerWithActiveScheduleItems();
+        }
+
+        function addScheduleItem(){
+            let scheduleItemId = generateUUID();
+            scheduleItems.push({
+                id: scheduleItemId,
+                name: "Scheduled Item " + (scheduleItems.length + 1),
+                type: "work", // can be work, break, meeting, event, or other
+                startTime: "",
+                endTime: "",
+                visibility: "hidden",
+                notes: ""
+            });
+            addVisualScheduleItem(scheduleItemId, scheduleItems[scheduleItems.length-1].name, scheduleItems[scheduleItems.length-1].type);
+        }
+
+        function deleteScheduleItem(id){
+            // remove from scheduleItems array
+            scheduleItems = scheduleItems.filter((sched) => sched.id != id);
+
+            // remove from visual
+            let schedulesContainer = document.getElementsByName("scheduleItems")[0];
+            let scheduleItemDivs = schedulesContainer.getElementsByClassName("scheduleItem");
+            for(let i = 0; i < scheduleItemDivs.length; i++){
+                let schedDiv = scheduleItemDivs[i];
+                let schedId = schedDiv.getAttribute("value");
+                if(schedId == id){
+                    schedulesContainer.removeChild(schedDiv);
+                    break;
+                }
+            }
+
+            // if the deleted item was selected, then clear the management div
+            if(scheduleManagement.selectedId == id){
+                chooseScheduleItemForManagement(null);
+            }
+        
+        }
+
+        function changeScheduleItemDetailsOfSelected(e){
+            let inputElement = e.currentTarget;
+            let schedId = scheduleManagement.selectedId;
+            let schedProp = inputElement.getAttribute("name");
+            if(!["name", "startTime", "endTime", "notes"].includes(schedProp)){
+                return;
+            }
+
+            let scheduleItemIndex = scheduleItems.findIndex((sched) => sched.id == schedId);
+            if(scheduleItemIndex == -1){
+                return;
+            }
+            scheduleItems[scheduleItemIndex][schedProp] = inputElement.value;
+            updateScheduleItemInList(schedId);
+        }
+
+        function updateActiveScheduleItemInList(id){
+            // similar to updateScheduleItemInList but for active schedule items
+            let scheduleItemIndex = scheduleItems.findIndex((sched) => sched.id == id);
+            if(scheduleItemIndex == -1){
+                return;
+            }
+            let sched = scheduleItems[scheduleItemIndex];
+
+            // find the div and update the name
+            let scheduleItemsParent = document.querySelector("div[name='scheduleItemsActive']");
+            let scheduleItemDivs = scheduleItemsParent.querySelectorAll("div[name='scheduleItem']");
+            let targetSchedDiv = null;
+            scheduleItemDivs.forEach((schedDiv) => {
+                if(schedDiv.getAttribute("value") == id){
+                    targetSchedDiv = schedDiv;
+                }
+            });
+
+            if(targetSchedDiv != null){
+                let nameSpan = targetSchedDiv.querySelector("h4[name='name']");
+                nameSpan.innerText = sched.name;
+
+                let typeSpan = targetSchedDiv.querySelector("span[name='type']");
+                typeSpan.innerText = sched.type;
+
+                let dateSpan = targetSchedDiv.querySelector("span[name='date']");
+                if(sched.startTime != null && sched.startTime != "" && sched.endTime != null && sched.endTime != ""){
+                    let startDate = new Date(sched.startTime);
+                    let endDate = new Date(sched.endTime);
+                    let options = { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+                    let startStr = startDate.toLocaleString('en-US', options);
+                    let endStr = endDate.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric' });
+                    dateSpan.innerText = startStr + " - " + endStr;
+                    dateSpan.style.color = "";
+                }else{
+                    dateSpan.innerText = "No Date";
+                    dateSpan.style.color = "var(--error-color)";
+                }
+
+                let iconSpan = targetSchedDiv.querySelector("span[name='icon']");
+                let iconName = scheduleItemTypeIconMapping[sched.type] || "event";
+                iconSpan.innerText = iconName;
+
+            }
+
+
+        }
+
+        function updateScheduleItemInList(id){
+            let scheduleItemIndex = scheduleItems.findIndex((sched) => sched.id == id);
+            if(scheduleItemIndex == -1){
+                return;
+            }
+            let sched = scheduleItems[scheduleItemIndex];
+
+            // find the div and update the name
+            let scheduleItemsParent = document.querySelector("div[name='scheduleItems']");
+            let scheduleItemDivs = scheduleItemsParent.querySelectorAll("div[name='scheduleItem']");
+            let targetSchedDiv = null;
+            scheduleItemDivs.forEach((schedDiv) => {
+                if(schedDiv.getAttribute("value") == id){
+                    targetSchedDiv = schedDiv;
+                }
+            });
+
+            if(targetSchedDiv != null){
+                let nameSpan = targetSchedDiv.querySelector("h4[name='name']");
+                nameSpan.innerText = sched.name;
+
+                let typeSpan = targetSchedDiv.querySelector("span[name='type']");
+                typeSpan.innerText = sched.type;
+
+                let dateSpan = targetSchedDiv.querySelector("span[name='date']");
+                if(sched.startTime != null && sched.startTime != "" && sched.endTime != null && sched.endTime != ""){
+                    let startDate = new Date(sched.startTime);
+                    let endDate = new Date(sched.endTime);
+                    let options = { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+                    let startStr = startDate.toLocaleString('en-US', options);
+                    let endStr = endDate.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric' });
+                    dateSpan.innerText = startStr + " - " + endStr;
+                    dateSpan.style.color = "";
+                }else{
+                    dateSpan.innerText = "No Date";
+                    dateSpan.style.color = "var(--error-color)";
+                }
+
+                let visibleSpan = targetSchedDiv.querySelector("span[name='visible']");
+                if(sched.visibility == "hidden"){
+                    visibleSpan.innerText = "visibility_off";
+                } else {
+                    visibleSpan.innerText = "";
+                }
+
+                let iconSpan = targetSchedDiv.querySelector("span[name='icon']");
+                let iconName = scheduleItemTypeIconMapping[sched.type] || "event";
+                iconSpan.innerText = iconName;
+
+            }
+            updateServerWithScheduleItems();
+
+            // if the schedule item is active, then update active list as well
+            if(scheduleManagement.activeScheduleItems.includes(id)){
+                updateActiveScheduleItemInList(id);
+            }
+        }
+
+        function chooseScheduleItemForManagement(id){
+            // if the id is null, then clear the inputs and hide the div
+            let scheduleItemsParent = document.querySelector("div[name='scheduleItems']");
+            let scheduleItemDivs = scheduleItemsParent.querySelectorAll("div[name='scheduleItem']");
+            // remove the primary highlight from all
+            scheduleItemDivs.forEach((schedDiv) => {
+                schedDiv.classList.remove("bg-primary");
+            });
+
+            let managementDiv = document.getElementsByName("scheduleItem-management")[0];
+            if(id == null){
+                managementDiv.style.display = "none";
+                scheduleManagement.selectedId = null;
+                return;
+            }
+
+            let scheduleItemIndex = scheduleItems.findIndex((sched) => sched.id == id);
+            let sched = scheduleItems[scheduleItemIndex];
+            scheduleManagement.selectedId = id;
+
+            managementDiv.style.display = "";
+
+
+            let selectedSpan = document.getElementsByName("scheduleItem-management-selected")[0];
+            selectedSpan.innerText = "Schedule Item #" + sched.id;
+
+            let nameInput = managementDiv.querySelector("input[name='name']");
+            nameInput.value = sched.name;
+
+            let startTimeInput = managementDiv.querySelector("input[name='startTime']");
+            startTimeInput.value = sched.startTime;
+
+            let endTimeInput = managementDiv.querySelector("input[name='endTime']");
+            endTimeInput.value = sched.endTime;
+
+            let notesInput = managementDiv.querySelector("textarea[name='notes']");
+            notesInput.value = sched.notes;
+
+
+            multiButtonSelect("eventType", sched.type, "selected");
+            multiButtonSelect("eventVisibility", sched.visibility, "selected");
+
+
+            let selectedSchedDiv = scheduleItemDivs.entries().find(([index, schedDiv]) => {
+                return schedDiv.getAttribute("value") == id;
+            })[1];
+            selectedSchedDiv.classList.add("bg-primary");
+        }
+
+        function updateServerWithScheduleItems(){
+            // emit changeData with scheduleItems
+            socket.emit("changeData", "schedule", "scheduleItems", scheduleItems);
+        }
+
+        function updateServerWithActiveScheduleItems(){
+            // emit changeData with activeScheduleItems
+            socket.emit("changeData", "schedule", "activeScheduleItems", scheduleManagement.activeScheduleItems);
+            // also the additional schedule notes
+            let additionalNotesElement = document.getElementsByName("additionalDescription")[0];
+            socket.emit("changeData", "schedule", "additionalScheduleNotes", additionalNotesElement.value);
+        }
+
+        function openPublicCalendarLInk(){
+            let link = scheduleManagement.googleCalendarLink;
+            if(link != null && link != ""){
+                window.open(link, "_blank");
+            }
+        }
+
+        chooseScheduleItemForManagement(null);
+
+        socket.on('connect', () => {
+            changeStatusIndicator("ri3d-socket-connected", true);
+        });
+
+        socket.on('disconnect', () => {
+            changeStatusIndicator("ri3d-socket-connected", false);
+        });
+
+        function reactToDataChange(group, key, value){
+            
+        }
+        
+
+        socket.on("dataUpdated", (group, key, value) => {
+            reactToDataChange(group, key, value);
+        });
+
+        socket.on("entireConfig", (config) => {
+
+            // set initial states
+            let currentStage = config.overlay.currentStage;
+            reactToDataChange("overlay", "currentStage", currentStage);
+
+            let transitionNum = config.camera.playTransition;
+            selectedOptions["transitionNum"] = transitionNum;
+
+            let preview = config.camera.preview;
+            reactToDataChange("camera", "preview", preview);
+
+            let availableCams = config.camera.available;
+            selectedOptions["availableCams"] = availableCams;
+            reactToDataChange("camera", "available", availableCams);
+
+            let scheduleItemsConfig = config.schedule.scheduleItems;
+            scheduleItems = scheduleItemsConfig;
+            // add visual schedule items
+            scheduleItems.forEach((sched) => {
+                addVisualScheduleItem(sched.id, sched.name, sched.type, sched.startTime, sched.endTime);
+            });
+            // unselect any selected schedule item
+            chooseScheduleItemForManagement(null);
+
+            let publicCalendarLink = config.constants.publicCalendarLink;
+            scheduleManagement.googleCalendarLink = publicCalendarLink;
+
+            let activeScheduleItemsConfig = config.schedule.activeScheduleItems;
+            scheduleManagement.activeScheduleItems = activeScheduleItemsConfig;
+            // add visual active schedule items
+            scheduleManagement.activeScheduleItems.forEach((schedId) => {
+                let scheduleItemIndex = scheduleItems.findIndex((sched) => sched.id == schedId);
+                if(scheduleItemIndex != -1){
+                    let sched = scheduleItems[scheduleItemIndex];
+                    addVisualScheduleItem_active(sched.id, sched.name, sched.type, sched.startTime, sched.endTime);
+                }
+            });
+
+            let additionalNotes = config.schedule.additionalScheduleNotes;
+            let additionalNotesElement = document.getElementsByName("additionalDescription")[0];
+            additionalNotesElement.value = additionalNotes;
+        });
+
+    </script>
+</html>
+

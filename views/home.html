@@ -1,0 +1,87 @@
+<html>
+    <head>
+        <title>RI3D@MTU 2026</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+        <link rel="stylesheet" href="main.css"/>
+        <!-- socket.io script -->
+        <script src="/ri3d26/socket.io/socket.io.js"></script>
+    </head>
+    <body class="designed-background">
+        <div class="center-module">
+            <div>
+                <div class="flex-center">
+                    <h1 style="font-size: 40px;">RI3D @ MTU 2026</h1>
+                </div>
+                <br/>
+                <br/>
+                <div class="flex-center" style="flex-wrap:wrap;width: 80vw">
+                    <div onclick="goToLink('/ri3d26/home')" class="large-home-button">
+                        <span class="material-symbols-outlined large-icon">home</span>
+                        <br/>
+                        <h2>Home</h2>
+                    </div>
+                    <div onclick="goToLink('/ri3d26/scenes')" class="large-home-button">
+                        <span class="material-symbols-outlined large-icon">camera_video</span>
+                        <br/>
+                        <h2>Camera Manager</h2>
+                    </div>
+                    <div onclick="goToLink('/ri3d26/manager')" class="large-home-button">
+                        <span class="material-symbols-outlined large-icon">wall_art</span>
+                        <br/>
+                        <h2>Overlay Manager</h2>
+                    </div>
+                    <div onclick="goToLink('/ri3d26/documents')" class="large-home-button">
+                        <span class="material-symbols-outlined large-icon">files</span>
+                        <br/>
+                        <h2>Document Manager</h2>
+                    </div>
+                    <div onclick="goToLink('/ri3d26/schedule')" class="large-home-button">
+                        <span class="material-symbols-outlined large-icon">avg_time</span>
+                        <br/>
+                        <h2>Schedule Manager</h2>
+                    </div>
+                    <div onclick="goToLink('/ri3d26/livestream')" class="large-home-button">
+                        <span class="material-symbols-outlined large-icon">preview</span>
+                        <br/>
+                        <h2>Livestream Overlay</h2>
+                    </div>
+                </div>
+            </div>
+            
+            
+        </div>
+    </body>
+    <script>
+
+        const socket = io(window.location.host, {
+            path: "/ri3d26/socket.io"
+        });
+
+        
+        function changeStatusIndicator(indicatorElementName, isConnected) {
+            let indicatorElement = document.getElementsByName(indicatorElementName)[0];
+            if (isConnected) {
+                indicatorElement.style.backgroundColor = "var(--success-color)";
+            } else {
+                indicatorElement.style.backgroundColor = "var(--error-color)";
+            }
+        }
+
+        function goToLink(path){
+            window.location.href = path;
+        }
+        
+
+        socket.on('connect', () => {
+            changeStatusIndicator("ri3d-socket-connected", true);
+        });
+
+        socket.on('disconnect', () => {
+            changeStatusIndicator("ri3d-socket-connected", false);
+        });
+
+    
+    </script>
+</html>
+

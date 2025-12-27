@@ -8,6 +8,14 @@
         <script src="/ri3d26/socket.io/socket.io.js"></script>
     </head>
     <body class="designed-background">
+        <div class="quick-options">
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/home'">home</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/scenes'">camera_video</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/manager'">wall_art</button>
+            <button class="material-symbols-outlined selected" onclick="window.location.href = '/ri3d26/documents'">files</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/schedule'">avg_time</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/livestream'">preview</button>
+        </div>
         <div class="center-module">
             <div class="container across-screen">
                 <div class="flex-apart" style="margin-bottom: 20px;">
@@ -25,7 +33,7 @@
                 <hr/>
                 <div class="flex-apart comfort-margin-top-bottom" style="margin-top: 20px;margin-bottom: 20px;">
                     <h3>File Upload Location</h3>
-                    <button class="bg-secondary">Go to Google Drive</button>
+                    <button onclick="openPublicDocumentsLink()" class="bg-secondary">Go to Google Drive</button>
                 </div>
                 <hr/>
                 <div class="flex-apart" style="margin-top: 20px;">
@@ -101,7 +109,8 @@
         });
 
         let documentManagement = {
-            selectedId: null
+            selectedId: null,
+            googleDriveLink: ""
         }
         let documents = [];
         let documentHtml = `
@@ -109,7 +118,7 @@
             <h4 name="name">INSERT_NAME</h4>
         </div>
         <div style="flex:1;justify-content:start" class="flex-center">
-            <span class="tiny-label text-label bg-secondary" style="margin:0px;display:inline-block" name="type">INSERT_TYPE</span>
+            <div class="tiny-label text-label bg-secondary flex-center" style="margin:0px;gap:5px"><span class="material-symbols-outlined tiny-label" style="display:inline-block;margin:0px" name="icon">INSERT_ICON</span><span style="display:inline-block" name="type">INSERT_TYPE</span></div>
             <span name="hidden" class="tiny-label" style="margin:0px;display:inline-block;">(hidden)</span>
         </div>
         <div style="flex:1">
@@ -151,6 +160,14 @@
                 updateDocumentInList(docId);
             }
         }
+
+        let documentTypeIconMapping = {
+            "file": "file_open",
+            "url": "link",
+            "code": "code",
+            "cad": "deployed_code",
+            "clip": "play_circle"
+        };
 
         let isRequest = ["reqStage", "streamSound"];
 
@@ -304,6 +321,8 @@
             let docHtmlToInsert = documentHtml.replaceAll("INSERT_ID", id);
             docHtmlToInsert = docHtmlToInsert.replaceAll("INSERT_NAME", name);
             docHtmlToInsert = docHtmlToInsert.replaceAll("INSERT_TYPE", type);
+            let iconName = documentTypeIconMapping[type] || "insert_drive_file";
+            docHtmlToInsert = docHtmlToInsert.replaceAll("INSERT_ICON", iconName);
             documentDiv.innerHTML = docHtmlToInsert;
             documentsContainer.appendChild(documentDiv);
 
@@ -325,12 +344,19 @@
         }
 
         function deleteDocument(id){
+
+            // alert to confirm
+
+            if(!confirm("Are you sure you want to delete document #" + id + "?")){
+                return;
+            }
+
             // remove from documents array
             documents = documents.filter((doc) => doc.id != id);
 
             // remove from visual
             let documentsContainer = document.getElementsByName("documents")[0];
-            let documentDivs = documentsContainer.getElementsByClassName("camera");
+            let documentDivs = documentsContainer.getElementsByClassName("document");
             for(let i = 0; i < documentDivs.length; i++){
                 let docDiv = documentDivs[i];
                 let docId = docDiv.getAttribute("value");
@@ -339,6 +365,9 @@
                     break;
                 }
             }
+            
+            updateServerWithDocuments();
+
         }
 
         function openDocumentSource(id){
@@ -403,7 +432,14 @@
                 }else{
                     openInNew.disabled = true;
                 }
+
+                let iconSpan = targetDocDiv.querySelector("span[name='icon']");
+                let iconName = documentTypeIconMapping[doc.type] || "insert_drive_file";
+                iconSpan.innerText = iconName;
+
             }
+
+            updateServerWithDocuments();
         }
 
         function chooseDocumentForManagement(id){
@@ -453,6 +489,18 @@
             selectedDocDiv.classList.add("bg-primary");
         }
 
+        function updateServerWithDocuments(){
+            // emit changeData with documents
+            socket.emit("changeData", "documents", "documents", documents);
+        }
+
+        function openPublicDocumentsLink(){
+            let link = documentManagement.googleDriveLink;
+            if(link != null && link != ""){
+                window.open(link, "_blank");
+            }
+        }
+
         chooseDocumentForManagement(null);
 
         socket.on('connect', () => {
@@ -464,70 +512,7 @@
         });
 
         function reactToDataChange(group, key, value){
-            if(group == "overlay"){
-                if(key == "currentStage"){
-                    // parse the information to get what's currently selected
-                    let buttonToTarget = "";
-                    if(value.includes("panel-enlarged")){
-                        buttonToTarget = "panel-enlarged";
-                    } else if(value.includes("panel-open")){
-                        buttonToTarget = "panel-open";
-                    } else if(value.includes("panel-closed")){
-                        buttonToTarget = "panel-closed";
-                    }
-
-                    
-
-                    selectedOptions["curStage"] = value;
-                    updateRequestedView(value);
-
-                    if(buttonToTarget != ""){
-                        let buttons = document.getElementsByName("reqStage");
-                        buttons.forEach((btn) => {
-                            let val = btn.getAttribute("value");
-                            if(val === buttonToTarget){
-                                btn.classList = "multi-button bg-success";
-                            }
-                        });
-                    }
-
-                    let sound = "obs";
-                    // if contains muted, then also set sound to muted
-                    if(value.includes("muted")){
-                        sound = "muted";
-                    }
-
-                    selectedOptions["streamSound"] = sound;
-
-                    let buttons = document.getElementsByName("streamSound");
-                    buttons.forEach((btn) => {
-                        let val = btn.getAttribute("value");
-                        if(val === sound){
-                            btn.classList = "multi-button bg-success";
-                        }
-                    });
-                }
-            }else if(group == "camera"){
-                if(key == "playTransition"){
-                    // update so we have it for later
-                    selectedOptions["transitionNum"] = value;
-                }else if(key == "available"){
-                    selectedOptions["availableCams"] = value;
-                    let inputElement = document.getElementsByName("availableCams")[0];
-                    inputElement.value = value.join(", ");
-                    updateCameraPreviews();
-                }else if(key == "preview"){
-                    selectedOptions["showCamPreviews"] = value;
-
-                    let buttons = document.getElementsByName("showCamPreviews");
-                    buttons.forEach((btn) => {
-                        let val = btn.getAttribute("value");
-                        if(val === value){
-                            btn.classList = "multi-button bg-primary";
-                        }
-                    });
-                }
-            }
+            
         }
         
 
@@ -550,6 +535,18 @@
             let availableCams = config.camera.available;
             selectedOptions["availableCams"] = availableCams;
             reactToDataChange("camera", "available", availableCams);
+
+            let documentsConfig = config.documents.documents;
+            documents = documentsConfig;
+            // add visual documents
+            documents.forEach((doc) => {
+                addVisualDocument(doc.id, doc.name, doc.type);
+            });
+            // unselect any selected document
+            chooseDocumentForManagement(null);
+
+            let publicDocumentsLink = config.constants.publicDocumentsLink;
+            documentManagement.googleDriveLink = publicDocumentsLink;
         });
 
         setInterval(() => {
