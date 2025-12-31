@@ -2,6 +2,11 @@ const express = require('express');
 const fs = require('fs');
 const app = express();
 const basePath = "/ri3d26";
+const cors = require('cors');
+// allow localhost:3001
+app.use(cors({
+    origin: '*'
+}));
 
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
@@ -48,6 +53,29 @@ app.get(basePath + '/home', (req, res) => {
     res.sendFile(__dirname + '/views/home.html');
 });
 
+app.get(basePath + '/document-search', (req, res) => {
+    // query parameter "q" holds the search term
+    let searchTerm = req.query.q || "";
+    let matchingDocs = [];
+    matchingDocs = globalConfig.documents.documents.filter(doc => 
+        doc.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        doc.visibility !== 'hidden'
+    );
+
+    res.json({ results: matchingDocs });
+});
+
+app.get(basePath + '/document-view', (req, res) => {
+    // query parameter "id" holds the document id
+    let docId = req.query.id || "";
+    let document = globalConfig.documents.documents.find(doc => doc.id === docId);
+    if(document){
+        res.redirect(document.source);
+    }else{
+        res.status(404).send("Document not found");
+    }
+});
+
 const reaction_groups = {
     "camera": (key, value) => reaction_camera.handleReaction(key, value, globalConfig, obsManager)
 }
@@ -72,7 +100,7 @@ let globalConfig = {
         sceneRequest: {}
     },
     documents: {
-        documents: {}
+        documents: []
     },
     schedule: {
         scheduleItems: {},
@@ -212,8 +240,8 @@ io.on('connection', (socket) => {
 
 init();
 
-http.listen(3000, async () => {
+http.listen(3001, async () => {
     await init();
-    console.log('listening on *:3000');
+    console.log('listening on *:3001');
 });
 

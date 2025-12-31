@@ -1,0 +1,258 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+        <style>
+            .ed-element.preset-menu-v2-wide {
+                @include menu-v2(
+                    $menu-wrapper-sticky: sticky_menu, 
+                    $sticky-animation: true, 
+                    $hover-style: hover_box_bottom, 
+                    $hover-border-size: 3px, 
+                    $hover-border-radius: 0px, 
+                    $menu-margin: 2rem, 
+                    $menu-padding: 1rem, 
+                    $menu-link-font: link-default-font, 
+                    $menu-link-fz: $fz-base-all, 
+                    $menu-link-letter-spacing: 0, 
+                    $menu-trigger-fullscreen: false, 
+                    $menu-trigger-fixed: false, 
+                    $menu-trigger-boxed: false, 
+                    $menu-trigger-description: false, 
+                    $menu-trigger-description-only: false, 
+                    $extended-trigger-settings: false, 
+                    $menu-size: 100%, 
+                    $menu-wrapper-align: space_around_menu, 
+                    $menu-link-tt: uppercase, 
+                    $menu-animation: animation_fade, 
+                    $menu-animation-duration: 0.3s, 
+                    $menu-position: flex_end_menu, 
+                    $menu-link-fw: $fw-base, 
+                    $menu-trigger-width: 30px, 
+                    $menu-trigger-bar-height: 3px, 
+                    $menu-trigger-bar-spacing: 8px, 
+                    $menu-trigger-animation: default, 
+                    $menu-trigger-animation-duration: 0.15s, 
+                    $menu-wrapper-padding: (0rem, 1rem, null), 
+                    $logo-position: top, 
+                    $logo-padding: 2rem, 
+                    $menu-padding-outer: 0rem, 
+                    $menu-wrapper-shadow: (2px, 2px, 4px, 0, rgba(0, 0, 0, 0.2)), 
+                    $menu-trigger-style: default, 
+                    $menu-trigger-flip: default, 
+                    $menu-open-align: center_menu, 
+                    $menu-logo-width: wide, 
+                    $menu-logo-background: #ededed
+                );
+            }
+            .ed-element.preset-menu-v2-default {
+                @include menu-v2(
+                    $menu-wrapper-sticky: sticky_instant, 
+                    $menu-wrapper-align: flex_end_menu, 
+                    $logo-position: default, 
+                    $menu-wrapper-shadow: (none, 2px, 4px), 
+                    $menu-color: $none, 
+                    $menu-margin: (0rem, null, null), 
+                    $menu-link-fz: (30px, null, null), 
+                    $menu-link-tt: none, 
+                    $menu-color-mobile: none, 
+                    $menu-color-active: $color-user-1, 
+                    $menu-color-choice: menu_items, 
+                    $menu-color-mobile-active: $color-primary
+                );
+            }
+            .clickable-button { cursor: pointer; }
+
+            :root{
+                --primary-color: #ffcd00;
+                --secondary-color: #000000;
+                --background-color: #ffffff;
+                --error-color: #ff2134;
+                --success-color: #00c853;
+                --gray-color: #e1e1e1;
+            }
+
+            .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+            }
+
+            .fill-in-button {
+                background-color: transparent;
+                background-size: 200% 100%;
+                background-position: 100% 0;
+                background-image: linear-gradient(to right,var(--white) 50%,rgba(0,0,0,0) 50%);
+                transition: background-position .3s ease, color .3s ease;
+            }
+
+            .fill-in-button:hover {
+                background-position: 0 0;
+                color: #ffcd00;
+            }
+
+            .flex-center{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .document-input {
+                border: 2px solid var(--primary-color);
+                border-radius: 8px;
+                padding: 8px;
+                background-color: var(--secondary-color);
+                transition: all 0.3s ease;
+                color: var(--primary-color);
+                width: 50%;
+                height: 60px;
+                display: flex;
+                align-items: center;
+            }
+
+            .document-search-button{
+                border: 2px solid var(--primary-color);
+                border-radius: 8px;
+                padding: 8px 12px;
+                background-color: var(--primary-color);
+                color: var(--secondary-color);
+                height: 60px;
+                cursor: pointer;
+            }
+
+            .document-input input {
+                background-color: transparent;
+                padding: 0px;
+                margin-left: 10px;
+                border: none;
+                color: var(--secondary-color);
+            }
+
+            .document-result{
+                border-radius: 8px;
+                padding: 8px 14px;
+                background-color: var(--background-color);
+                width: 30%;
+                min-width: 300px;
+                color: var(--secondary-color);
+            }
+
+            .document-result .document-view-button{
+                border: 2px solid var(--secondary-color);
+                border-radius: 8px;
+                padding: 4px 8px;
+                background-color: var(--secondary-color);
+                color: var(--background-color);
+                cursor: pointer;
+            }
+
+            .ed-element.preset-footer-fulla-v2-default {
+                @include footer-fulla-v2($background: $color-background);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="flex-center" style="gap: 10px">
+            <div class="document-input">
+                <span style="font-size: 30px" class="material-symbols-outlined">search</span>
+                <input onkeyup="handleEnterKey(event)" id="search-term" style="font-size: 20px;color:white;flex:1" value="" />
+            </div> 
+            <button onclick="runSearch()" style="font-size:24px" id="search-button" class="document-search-button">Search</button>
+        </div>
+
+        <div style="margin-top: 20px;flex-wrap:wrap" class="flex-center" id="all-documents">
+            
+        </div>
+    </body>
+    <script>
+
+        const endpoint = "http://localhost:3000/ri3d26/document-search";
+        const openEndpoint = "http://localhost:3000/ri3d26/document-view";
+        let documents = [];
+        let documentTypeIconMapping = {
+            "file": "file_open",
+            "url": "link",
+            "code": "code",
+            "cad": "deployed_code",
+            "clip": "play_circle"
+        };
+        const documentTemplate = `
+            <div class="flex-center" style="justify-content: space-between;margin-bottom: 5px">
+                <span style="font-size: 24px">INSERT_NAME</span>
+                <span style="font-size: 24px" class="material-symbols-outlined">INSERT_ICON</span>
+            </div>
+            <span style="font-size: 14px;white-space: normal;word-wrap: break-word;">INSERT_NOTES</span>
+            <div class="flex-center" style="justify-content: space-between;margin-top: 10px">
+                <div></div>
+                <button class="document-view-button">Open Document</button>
+            </div>
+        `;
+
+        function handleEnterKey(event){
+            if(event.key === "Enter"){
+                runSearch();
+            }
+            updateButtonPreview();
+        }
+
+        function updateButtonPreview(loading=false){
+            // if the loading is true, show a loading label
+            let button = document.getElementById("search-button");
+            if(loading){
+                button.innerText = "Searching...";
+                button.disabled = true;
+            } else {
+                // if there is no search term, show "show all"
+                button.innerText = "Search";
+                button.disabled = false;
+                if(document.getElementById("search-term").value.length === 0){
+                    button.innerText = "Show All";
+                }
+            }
+
+        }
+
+        function updateDocumentResults(){
+            let container = document.getElementById("all-documents");
+            container.innerHTML = "";
+            if(documents.length === 0){
+                container.innerHTML = "<span style='font-size: 24px;color:var(--error-color)'>No documents found.</span>";
+                updateButtonPreview();
+                return;
+            }
+            documents.forEach(doc => {
+                let docElement = document.createElement("div");
+                docElement.className = "document-result";
+                let icon = documentTypeIconMapping[doc.type] || "file_open";
+                let docHTML = documentTemplate
+                    .replace("INSERT_NAME", doc.name)
+                    .replace("INSERT_ICON", icon)
+                    .replace("INSERT_NOTES", doc.notes || "See for yourself!");
+                docElement.innerHTML = docHTML;
+                let viewButton = docElement.querySelector(".document-view-button");
+                let useLink = openEndpoint + "?id=" + encodeURIComponent(doc.id);
+                viewButton.onclick = () => {
+                    window.open(useLink, "_blank");
+                };
+                container.appendChild(docElement);
+            });
+            updateButtonPreview();
+        }
+
+        function runSearch(){
+            let searchTerm = document.getElementById("search-term").value;
+            updateButtonPreview(true);
+            fetch(endpoint + "?q=" + encodeURIComponent(searchTerm))
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    let results = data.results;
+                    documents = results;
+                    updateDocumentResults();
+                });
+        }
+
+        updateButtonPreview();
+    </script>
+</html>
