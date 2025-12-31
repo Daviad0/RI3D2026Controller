@@ -240,8 +240,8 @@ io.on('connection', (socket) => {
 
 init();
 
-http.listen(3001, async () => {
+http.listen(3000, async () => {
     await init();
-    console.log('listening on *:3001');
+    console.log('listening on *:3000');
 });
 
