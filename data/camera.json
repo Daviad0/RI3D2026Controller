@@ -6,16 +6,27 @@
   ],
   "preview": "images",
   "manager": "ws://127.0.0.1:4455",
-  "configured": [],
+  "configured": [
+    {
+      "id": "cd11710c",
+      "name": "Camera 1",
+      "url": "",
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "type": "unknown"
+    }
+  ],
   "livePreview": {
     "id": "3e735c2e",
     "preview": "off"
   },
   "sceneRequest": {},
   "activeSceneRequest": {
-    "scene": "BeRightBack",
+    "scene": "StartingSoon",
     "cameras": [
-      "583cda1b"
+      ""
     ]
   }
 }

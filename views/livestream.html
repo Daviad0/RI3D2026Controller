@@ -54,6 +54,11 @@
 
         }
 
+        .moved-timer{
+            right: 7.2vw;
+            bottom: 5vw
+        }
+
         .enlarged-timer{
             font-size: 10.5vw;
             right: 7.2vw;
@@ -70,6 +75,12 @@
 
             transition: all 0.5s ease;
 
+        }
+
+        .moved-constant-timer-marker{
+            right: 23.5vw;
+            width: 2.5vw;
+            bottom: 6.6vw
         }
 
         .enlarged-constant-timer-marker{
@@ -114,6 +125,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: opacity 1s ease;
         }
 
         .sponsor-logo-view img {
@@ -132,6 +144,9 @@
             padding: 1vw;
             box-sizing: border-box;
             font-family: 'Cooper Hewitt', sans-serif;
+
+            transition: opacity 1s ease;
+
         }
 
         .additional-details-view h3{
@@ -162,6 +177,9 @@
             font-family: 'Cooper Hewitt', sans-serif;
             overflow-y: hidden;
 
+            transition: opacity 1s ease;
+
+
         }
 
         .schedule-enlarged-view h2{
@@ -175,7 +193,9 @@
             margin-top: 1vw;
             background-color: white;
             color: black;
-            border-radius: 16px;
+            border-radius: 4px;
+            border-top-left-radius: 16px;
+            border-bottom-left-radius: 16px;
             padding: 1.4vw;
             box-sizing: border-box;
             transition: background-color 0.5s ease;
@@ -205,6 +225,10 @@
             display: block;
             font-size: 1.6vw;
         }
+
+        .hide{
+            display: none !important;
+        }
         
     </style>
 
@@ -214,14 +238,14 @@
     
 </head>
 <body>
-    <img src="image.png"  style="position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: -1;"/>
+    <!-- <img src="image.png"  style="position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: -1;"/> -->
 
     <div class="lottie" id="camera-transition"></div>  
 
-    <div style="display: none;" class="lottie" id="lottie"></div>  
+    <div class="lottie" id="lottie"></div>  
 
     <div class="html-overlay">
-        <div class="timer clock">
+        <div class="timer clock" id="timer-div">
             <span id="timer">20:25:26</span>
         </div>
         <div class="constant-timer-marker" style="background-color: transparent;width:6vw" id="timer-marker"></div>
@@ -231,12 +255,12 @@
         </div>
     </div>
 
-    <div id="sponsor-logo-view" class="sponsor-logo-view">
+    <div style="opacity: 0;" id="sponsor-logo-view" class="sponsor-logo-view">
         <img id="sponsor-logo-image" src="MTUeng_white.png" alt="Sponsor Logo"/>
 
     </div>
 
-    <div id="additional-details-view" class="additional-details-view">
+    <div style="opacity: 0;" id="additional-details-view" class="additional-details-view">
         <div style="display: flex; flex-direction: column; align-items: start; justify-content: center;height:100%;text-align: left;">
             <h3>Our Team Says</h3>
             <span>
@@ -246,7 +270,7 @@
         
     </div>
 
-    <div id="schedule-enlarged-view" class="schedule-enlarged-view">
+    <div style="opacity: 0;" id="schedule-enlarged-view" class="schedule-enlarged-view">
         <h2>What's Going On?</h2>
         <div class="container">
             <div style="display: flex; justify-content: space-between; align-items: center">
@@ -295,7 +319,7 @@
         </div>
     </div>
 
-    <div style="display: none;" class="lottie" id="sponsor"></div>  
+    <div class="lottie" id="sponsor"></div>  
 
     <div id="stateInformationView" style="display: none;">
     Queue:
@@ -310,7 +334,6 @@
     });
 
     var stages = ["panel-open-muted", "panel-large", "panel-open", "panel-closed", "panel-closed-muted", "panel-enlarged"];
-
 
     var sponsors = [
         {
@@ -442,12 +465,70 @@
             currentScheduleItems: [],
             additionalScheduleNotes: "",
             expandedActiveScheduleItemIndex: -1,
-            expandedActiveScheduleItemSwitchTime: null
+            expandedActiveScheduleItemSwitchTime: null,
+            needToChangeScheduleItems: false
+        },
+        scene: {
+            sceneRequest: null
         }
     }
 
     localStateInformation.timer.targetTime = new Date().getTime() + (20 * 60 + 25) * 1000; // 20 minutes and 25 seconds from now
 
+    // there will be a delay... so we know we can wait before triggering all of these...
+    var sceneClasses = {
+        "BeRightBack": {
+            "lottie": "lottie hide",
+            "sponsor-logo-view": "sponsor-logo-view hide",
+            "additional-details-view": "additional-details-view hide",
+            "schedule-enlarged-view": "schedule-enlarged-view hide",
+            "sponsor": "lottie hide",
+            "muted": "muted-text hide",
+            "timer-div": "timer clock moved-timer",
+            "timer-marker": "constant-timer-marker moved-constant-timer-marker"
+        },
+        "TwoCamera": {
+            "lottie": "lottie",
+            "sponsor-logo-view": "sponsor-logo-view",
+            "additional-details-view": "additional-details-view",
+            "schedule-enlarged-view": "schedule-enlarged-view",
+            "sponsor": "lottie",
+            "muted": "muted-text",
+            "timer-div": "timer clock",
+            "timer-marker": "constant-timer-marker"
+        },
+        "Passive": {
+            "lottie": "lottie",
+            "sponsor-logo-view": "sponsor-logo-view",
+            "additional-details-view": "additional-details-view",
+            "schedule-enlarged-view": "schedule-enlarged-view",
+            "sponsor": "lottie",
+            "muted": "muted-text",
+            "timer-div": "timer clock",
+            "timer-marker": "constant-timer-marker"
+        },
+        "Present": {
+            "lottie": "lottie",
+            "sponsor-logo-view": "sponsor-logo-view",
+            "additional-details-view": "additional-details-view",
+            "schedule-enlarged-view": "schedule-enlarged-view",
+            "sponsor": "lottie",
+            "muted": "muted-text",
+            "timer-div": "timer clock",
+            "timer-marker": "constant-timer-marker"
+        },
+        "StartingSoon": {
+            "lottie": "lottie hide",
+            "sponsor-logo-view": "sponsor-logo-view hide",
+            "additional-details-view": "additional-details-view hide",
+            "schedule-enlarged-view": "schedule-enlarged-view hide",
+            "sponsor": "lottie hide",
+            "muted": "muted-text hide",
+            "timer-div": "timer clock",
+            "timer-marker": "constant-timer-marker "
+        },
+
+    }
 
     var states = {
         "panel-open-muted": {
@@ -679,7 +760,19 @@
                         "panel-closed_panel-enlarged"
                     ]
                 }
-            ]
+            ],
+            // define final state to both CHECK and in case something goes wrong during a transition
+            finalState: {
+                "sponsor-logo-view": {
+                    opacity: 1
+                },
+                "additional-details-view": {
+                    opacity: 1
+                },
+                "schedule-enlarged-view": {
+                    opacity: 1
+                }
+            }
         },
         "panel-enlarged_panel-closed-muted": {
             passive: false,
@@ -705,7 +798,19 @@
                         "panel-closed_panel-closed-muted"
                     ]
                 }
-            ]
+            ],
+            // define final state to both CHECK and in case something goes wrong during a transition
+            finalState: {
+                "sponsor-logo-view": {
+                    opacity: 0
+                },
+                "additional-details-view": {
+                    opacity: 0
+                },
+                "schedule-enlarged-view": {
+                    opacity: 0
+                }
+            }
         },
         "panel-closed-muted_panel-closed": {
             passive: true,
@@ -751,9 +856,28 @@
                         constantMarkerElem.classList.add("enlarged-constant-timer-marker");
                         constantMarkerElem.style.width = "7vw";
 
+                        let sponsorLogoView = document.getElementById("sponsor-logo-view");
+                        let additionalDetailsView = document.getElementById("additional-details-view");
+                        let scheduleEnlargedView = document.getElementById("schedule-enlarged-view");
+                        sponsorLogoView.style.opacity = 1;
+                        additionalDetailsView.style.opacity = 1;
+                        scheduleEnlargedView.style.opacity = 1;
+
                     }
                 }
-            ]
+            ],
+            // define final state to both CHECK and in case something goes wrong during a transition
+            finalState: {
+                "sponsor-logo-view": {
+                    opacity: 1
+                },
+                "additional-details-view": {
+                    opacity: 1
+                },
+                "schedule-enlarged-view": {
+                    opacity: 1
+                }
+            }
         },
         "panel-enlarged_panel-closed": {
             passive: false,
@@ -776,13 +900,50 @@
                         constantMarkerElem.classList.remove("enlarged-constant-timer-marker");
                         constantMarkerElem.style.width = "6vw";
 
+                        let sponsorLogoView = document.getElementById("sponsor-logo-view");
+                        let additionalDetailsView = document.getElementById("additional-details-view");
+                        let scheduleEnlargedView = document.getElementById("schedule-enlarged-view");
+                        sponsorLogoView.style.opacity = 0;
+                        additionalDetailsView.style.opacity = 0;
+                        scheduleEnlargedView.style.opacity = 0;
+
                     }
                 }
-            ]
+            ],
+            // define final state to both CHECK and in case something goes wrong during a transition
+            finalState: {
+                "sponsor-logo-view": {
+                    opacity: 0
+                },
+                "additional-details-view": {
+                    opacity: 0
+                },
+                "schedule-enlarged-view": {
+                    opacity: 0
+                }
+            }
         },
     };
 
     var isTransitioning = false;
+
+    var scheduleItemContainerTemplate = `
+    <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center">
+                <div style="text-align: left;">
+                    <span style="font-size: 1.6vw;"><b>INSERT_NAME</b></span>
+                    <span style="font-size: 1.2vw;margin-left: 5px">INSERT_TIME</span>
+                </div>
+                <span class="material-symbols-outlined" style="font-size: 2.5vw;">INSERT_ICON</span>
+            </div>
+            <div class="container-additional">
+                <hr/>
+                <span style="font-size: 1vw; text-align: left; display: block; margin-top: 20px;">
+                    INSERT_NOTES
+                </span>
+            </div>
+        </div>
+    `;
 
     function playCameraTransition(){
 
@@ -960,6 +1121,17 @@
         let expandedIndex = localStateInformation.schedule.expandedActiveScheduleItemIndex;
         let expandedSwitchTime = localStateInformation.schedule.expandedActiveScheduleItemSwitchTime;
         let currentTime = new Date().getTime();
+
+        let additionalNotesView = document.getElementById("additional-details-view");
+        let notesSpan = additionalNotesView.getElementsByTagName("span")[0];
+        notesSpan.innerText = localStateInformation.schedule.additionalScheduleNotes;
+
+        if(localStateInformation.schedule.needToChangeScheduleItems){
+            updateAllScheduleItemsInView();
+            localStateInformation.schedule.needToChangeScheduleItems = false;
+            return; // wait until next loop to change expanded item
+        }
+
         // if the switch time is null or has passed, we can expand the next item
         if(expandedSwitchTime == null || currentTime >= expandedSwitchTime){
             // collapse all containers first
@@ -977,6 +1149,67 @@
             // set the new expanded index and switch time
             localStateInformation.schedule.expandedActiveScheduleItemIndex = expandedIndex;
             localStateInformation.schedule.expandedActiveScheduleItemSwitchTime = currentTime + 10000; // switch every 15 seconds
+        }
+    }
+
+    function reactToSceneRequestChange(){
+        let requestedScene = localStateInformation.scene.sceneRequest;
+        if(!requestedScene) return;
+
+        let scene = requestedScene.scene;
+        let sceneClassObj = sceneClasses[scene];
+
+        for(let elementId in sceneClassObj){
+            let element = document.getElementById(elementId);
+            let className = sceneClassObj[elementId];
+            element.className = className;
+        }
+    }
+
+    let scheduleItemTypeIconMapping = {
+        "work": "exercise",
+        "break": "bedtime",
+        "meeting": "groups",
+        "event": "local_activity",
+        "other": "event"
+    };
+
+    function updateAllScheduleItemsInView(){
+        let scheduleView = document.getElementById("schedule-enlarged-view");
+        scheduleView.innerHTML = "<h2>What's Going On?</h2>"; // reset content
+
+        let scheduleItems = localStateInformation.schedule.currentScheduleItems;
+        for(let i = 0; i < scheduleItems.length; i++){
+
+            let item = localStateInformation.schedule.allScheduleItems.find(sched => sched.id == scheduleItems[i]);
+            if(!item) continue;
+
+            let icon = scheduleItemTypeIconMapping[item.type] || "event";
+
+            // there is a startTime and endTime, format time as "HH:MM AM/PM - HH:MM AM/PM"
+            if(item.startTime && item.endTime){
+                let startDate = new Date(item.startTime);
+                let endDate = new Date(item.endTime);
+                let options = { hour: 'numeric', minute: 'numeric', hour12: true };
+                let startTimeStr = startDate.toLocaleString('en-US', options);
+                let endTimeStr = endDate.toLocaleString('en-US', options);
+                item.time = startTimeStr + " - " + endTimeStr;
+            }else{
+                item.time = "As Long As It Takes";
+            }
+
+            let itemHTML = scheduleItemContainerTemplate
+                .replace("INSERT_NAME", item.name)
+                .replace("INSERT_TIME", item.time)
+                .replace("INSERT_NOTES", item.notes)
+                .replace("INSERT_ICON", icon);
+            scheduleView.innerHTML += itemHTML;
+
+            // if this should be the expanded item, add the expanded class
+            if(i == localStateInformation.schedule.expandedActiveScheduleItemIndex){
+                let containerDivs = scheduleView.getElementsByClassName("container");
+                containerDivs[i].classList.add("expanded");
+            }
         }
     }
 
@@ -1151,7 +1384,7 @@
         renderer: 'svg',
         loop: false,
         autoplay: false,
-        path: 'testbarsequence.json',
+        path: 'bottombaranimation.json',
         name: "Test Animation"
     });
 
@@ -1188,6 +1421,16 @@
         localStateInformation.schedule.currentScheduleItems = activeItems;
         let additionalNotes = config.schedule.additionalScheduleNotes;
         localStateInformation.schedule.additionalScheduleNotes = additionalNotes;
+
+        localStateInformation.schedule.needToChangeScheduleItems = true;
+
+        let sceneRequest = config.camera.sceneRequest;
+        if(!sceneRequest.scene){
+            // then get the activeSceneRequest instead
+            sceneRequest = config.camera.activeSceneRequest;
+        }
+        localStateInformation.scene.sceneRequest = sceneRequest;
+        reactToSceneRequestChange();
     })
 
     socket.on("dataUpdated", (group, key, value) => {
@@ -1207,14 +1450,22 @@
                     localStateInformation.camera.currentTransitionNumber = value;
                     playCameraTransition();
                 }
+            }else if(key == "sceneRequest"){
+                localStateInformation.scene.sceneRequest = value;
+                setTimeout(() => {
+                    reactToSceneRequestChange();
+                }, 500);
             }
         }else if(group == "schedule"){
             if(key == "scheduleItems"){
                 localStateInformation.schedule.allScheduleItems = value;
+                localStateInformation.schedule.needToChangeScheduleItems = true;
             }else if(key == "activeScheduleItems"){
                 localStateInformation.schedule.currentScheduleItems = value;
+                localStateInformation.schedule.needToChangeScheduleItems = true;
             }else if(key == "additionalScheduleNotes"){
                 localStateInformation.schedule.additionalScheduleNotes = value;
+                localStateInformation.schedule.needToChangeScheduleItems = true;
             }
         }
     });
