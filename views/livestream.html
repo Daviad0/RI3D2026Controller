@@ -65,12 +65,19 @@
             bottom: 2.5vw
         }
 
+        .active-timer{
+            font-size: 4.5vw;
+            right: .7vw;
+            bottom: 1.4vw;
+            width: 10vw
+        }
+
 
         .constant-timer-marker{
             position: absolute;
             right: 19vw;
             bottom: 3.6vw;
-            width: 2vw;
+            width: 6vw;
             background-color: black;
 
             transition: all 0.5s ease;
@@ -79,14 +86,20 @@
 
         .moved-constant-timer-marker{
             right: 23.5vw;
-            width: 2.5vw;
-            bottom: 6.6vw
+            width: 6vw;
+            bottom: 6.6vw;
         }
 
         .enlarged-constant-timer-marker{
             right: 23.5vw;
             width: 7vw;
             bottom: 4.6vw
+        }
+
+        .active-constant-timer-marker{
+            right: 11.6vw;
+            width: 3.8vw;
+            bottom: 2vw
         }
 
         .muted-text{
@@ -110,6 +123,54 @@
             padding: 0;
         }
 
+        .active-sponsor-logo{
+            background-color: rgba(0,0,0,0.5);
+            border-top-left-radius: 16px;
+            color: white;
+            width: 15vw;
+            height: 5.5vw;
+            position: absolute;
+            right: 0vw;
+            bottom: 8.2vw;
+            transition: all 0.5s ease;
+        }
+
+        .active-sponsor-logo.tall{
+            width: 13vw;
+            height: 7vw;
+        }
+
+
+        .active-sponsor-logo img {
+            max-width: 12vw;
+            max-height: 4vw;
+            transition: all 0.5s ease;
+        }
+
+        .be-right-back-sponsor-view{
+            position: absolute;
+            width: 32vw;
+            height: 12vw;
+            bottom: 3.8vw;
+            left: 30vw;
+            color: white;
+            text-align: left;
+            padding: 1vw;
+            box-sizing: border-box;
+            font-family: 'Cooper Hewitt', sans-serif;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease;
+        }
+
+        .be-right-back-sponsor-view img {
+            max-width: 24vw;
+            max-height: 8vw;
+            transition: all 0.5s ease;
+        }
+
         .sponsor-logo-view{
             position: absolute;
             width: 32vw;
@@ -130,8 +191,11 @@
 
         .sponsor-logo-view img {
             max-width: 24vw;
-            max-height: 10vw;
+            max-height: 8vw;
+            transition: all 0.5s ease;
         }
+
+        
 
         .additional-details-view{
             position: absolute;
@@ -226,6 +290,18 @@
             font-size: 1.6vw;
         }
 
+        .upnow-upnext{
+            /* background-color: red; */
+            position: absolute;
+            bottom: 0.7vw;
+            left: 8vw;
+            width: 60vw;
+            height: 5vw;
+            color: white;
+            font-family: 'Cooper Hewitt', sans-serif;
+            transition: opacity 0.5s ease;
+        }
+
         .hide{
             display: none !important;
         }
@@ -238,9 +314,13 @@
     
 </head>
 <body>
-    <!-- <img src="image.png"  style="position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: -1;"/> -->
+    <!-- <img src="image2.png"  style="position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: -1;"/> -->
 
     <div class="lottie" id="camera-transition"></div>  
+
+    <div id="active-sponsor-logo" class="active-sponsor-logo" style="display: flex;justify-content: center;align-items: center;">
+        <img id="active-sponsor-logo-image" src="MTUeng_white.png" alt="Sponsor Logo"/>
+    </div>
 
     <div class="lottie" id="lottie"></div>  
 
@@ -248,16 +328,22 @@
         <div class="timer clock" id="timer-div">
             <span id="timer">20:25:26</span>
         </div>
-        <div class="constant-timer-marker" style="background-color: transparent;width:6vw" id="timer-marker"></div>
+        <div class="constant-timer-marker" style="background-color: transparent" id="timer-marker"></div>
         <div class="muted-text" id="muted">
             We're Muted
 
         </div>
     </div>
 
+    
+
     <div style="opacity: 0;" id="sponsor-logo-view" class="sponsor-logo-view">
         <img id="sponsor-logo-image" src="MTUeng_white.png" alt="Sponsor Logo"/>
 
+    </div>
+
+    <div id="be-right-back-sponsor-view" class="be-right-back-sponsor-view">
+        <img id="be-right-back-sponsor-logo-image" src="MTUeng_black.png" alt="Sponsor Logo"/>
     </div>
 
     <div style="opacity: 0;" id="additional-details-view" class="additional-details-view">
@@ -321,6 +407,10 @@
 
     <div class="lottie" id="sponsor"></div>  
 
+    <div class="upnow-upnext" id="upnow-upnext" style="opacity: 0;">
+        <span style="font-size: 1.4vw">Current Event Up Now</span>
+    </div>
+
     <div id="stateInformationView" style="display: none;">
     Queue:
     </div>
@@ -333,7 +423,7 @@
         path: "/ri3d26/socket.io"
     });
 
-    var stages = ["panel-open-muted", "panel-large", "panel-open", "panel-closed", "panel-closed-muted", "panel-enlarged"];
+    var stages = ["panel-open-muted", "panel-large", "panel-open", "panel-closed", "panel-closed-muted", "panel-enlarged", "panel-active"];
 
     var sponsors = [
         {
@@ -348,6 +438,11 @@
                     animationPath: "pavlis_timer_segment.json",
                     frames: [0, 100],
                     speed: 0.2
+                },
+                "logo": {
+                    lightFile: "PHCLogo.png",
+                    darkFile: "PHCLogo.png",
+                    option: "tall"
                 }
             }
         },
@@ -363,6 +458,11 @@
                     animationPath: "41-lumber_timer_segment.json",
                     frames: [0, 120],
                     speed: 0.2
+                },
+                "logo": {
+                    lightFile: "41lumberlight.png",
+                    darkFile: "41lumberdark.png",
+                    option: "tall"
                 }
             }
         },
@@ -378,6 +478,11 @@
                     animationPath: "ccr_mtu_timer_segment.json",
                     frames: [0, 120],
                     speed: 0.2
+                },
+                "logo": {
+                    lightFile: "ccrlight.png",
+                    darkFile: "ccrdark.png",
+                    option: "tall"
                 }
             }
         },
@@ -393,6 +498,11 @@
                     animationPath: "snb_timer_segment.json",
                     frames: [0, 100],
                     speed: 0.2
+                },
+                "logo": {
+                    lightFile: "snb.jpg",
+                    darkFile: "snb.jpg",
+                    option: ""
                 }
             }
         },
@@ -408,6 +518,21 @@
                     animationPath: "coecoc_timer_segment.json",
                     frames: [0, 120],
                     speed: 0.2
+                },
+                "logo": {
+                    lightFile: "MTUeng_white.png",
+                    darkFile: "MTUeng_black.png",
+                    option: ""
+                }
+            }
+        },
+        {
+            name: "COC Independent",
+            versions: {
+                "logo": {
+                    lightFile: "MTUcoc_white.png",
+                    darkFile: "MTUcoc_black.png",
+                    option: ""
                 }
             }
         },
@@ -417,8 +542,8 @@
                 "bottom-bar": {
                     animationPath: "upnextupnowsponsorbar.json",
                     frames: [0, 180],
-                    speed: 0.2
-                  }
+                    speed: 0.15
+                }
             },
         },
         {
@@ -428,11 +553,28 @@
                     animationPath: "thrifty_timer_segment.json",
                     frames: [0, 120],
                     speed: 0.2
+                },
+                "logo": {
+                    lightFile: "thriftylight.png",
+                    darkFile: "thriftydark.png",
+                    option: "tall"
                 }
             },
-        }
+        },
+        {
+            name: "Michigan Tech",
+            versions: {
+                "logo": {
+                    lightFile: "FullName_Horizontal_OneColor_White.png",
+                    darkFile: "FullName_Horizontal_OneColor_Black.png",
+                    option: ""
+                }
+            }
+        },
 
     ];
+
+    const MANUALEDIT=false;
 
     var localStateInformation = {
         sponsor: {
@@ -485,7 +627,9 @@
             "sponsor": "lottie hide",
             "muted": "muted-text hide",
             "timer-div": "timer clock moved-timer",
-            "timer-marker": "constant-timer-marker moved-constant-timer-marker"
+            "timer-marker": "constant-timer-marker moved-constant-timer-marker",
+            "active-sponsor-logo": "active-sponsor-logo hide",
+            "be-right-back-sponsor-view": "be-right-back-sponsor-view"
         },
         "TwoCamera": {
             "lottie": "lottie",
@@ -495,7 +639,9 @@
             "sponsor": "lottie",
             "muted": "muted-text",
             "timer-div": "timer clock",
-            "timer-marker": "constant-timer-marker"
+            "timer-marker": "constant-timer-marker",
+            "active-sponsor-logo": "active-sponsor-logo",
+            "be-right-back-sponsor-view": "be-right-back-sponsor-view hide"
         },
         "Passive": {
             "lottie": "lottie",
@@ -505,7 +651,9 @@
             "sponsor": "lottie",
             "muted": "muted-text",
             "timer-div": "timer clock",
-            "timer-marker": "constant-timer-marker"
+            "timer-marker": "constant-timer-marker",
+            "active-sponsor-logo": "active-sponsor-logo hide",
+            "be-right-back-sponsor-view": "be-right-back-sponsor-view hide"
         },
         "Present": {
             "lottie": "lottie",
@@ -515,7 +663,9 @@
             "sponsor": "lottie",
             "muted": "muted-text",
             "timer-div": "timer clock",
-            "timer-marker": "constant-timer-marker"
+            "timer-marker": "constant-timer-marker",
+            "active-sponsor-logo": "active-sponsor-logo",
+            "be-right-back-sponsor-view": "be-right-back-sponsor-view hide"
         },
         "StartingSoon": {
             "lottie": "lottie hide",
@@ -525,7 +675,9 @@
             "sponsor": "lottie hide",
             "muted": "muted-text hide",
             "timer-div": "timer clock",
-            "timer-marker": "constant-timer-marker "
+            "timer-marker": "constant-timer-marker ",
+            "active-sponsor-logo": "active-sponsor-logo hide",
+            "be-right-back-sponsor-view": "be-right-back-sponsor-view hide"
         },
 
     }
@@ -548,11 +700,58 @@
         },
         "panel-enlarged": {
             allowSponsorChange: "logo"
+        },
+        "panel-active": {
+            allowSponsorChange: "logo"
         }
     }
     // transitions include START and END frames
     // if START > END, the animation plays in reverse
     var transitions = {
+        "panel-open_panel-active": {
+            actions: [
+                {
+                    type: "domAction",
+                    speed: 300,
+                    action: () => {
+                        // hide muted text
+                        document.getElementById("muted").style.opacity = 0;
+                        // add the active timer class
+                        let timerElem = document.getElementById("timer-div");
+                        timerElem.classList.add("active-timer");
+                        let constantMarkerElem = document.getElementById("timer-marker");
+                        constantMarkerElem.classList.add("active-constant-timer-marker");
+                    }
+                },
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [200,200]
+                }
+            ]
+        },
+        "panel-open-muted_panel-active": {
+            actions: [
+                {
+                    type: "domAction",
+                    speed: 300,
+                    action: () => {
+                        // hide muted text
+                        document.getElementById("muted").style.opacity = 0;
+                        // add the active timer class
+                        let timerElem = document.getElementById("timer-div");
+                        timerElem.classList.add("active-timer");
+                        let constantMarkerElem = document.getElementById("timer-marker");
+                        constantMarkerElem.classList.add("active-constant-timer-marker");
+                    }
+                },
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [200,200]
+                }
+            ]
+        },
         "panel-open-muted_panel-open": {
             passive: true,
             actions: [
@@ -613,6 +812,60 @@
                     speed: 0,
                     action: [
                         "panel-closed_panel-closed-muted"
+                    ]
+                }
+            ]
+        
+        },
+        "panel-open-muted_panel-enlarged": {
+            passive: false,
+            actions: [
+                {
+                    type: "subTransition",
+                    speed: 0,
+                    action: [
+                        "panel-open-muted_panel-open"
+                    ]
+                },
+                {
+                    type: "domAction",
+                    speed: 500,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                },
+                {
+                    type: "subTransition",
+                    speed: 0,
+                    action: [
+                        "panel-open_panel-enlarged"
+                    ]
+                }
+            ]
+        
+        },
+        "panel-enlarged_panel-open-muted": {
+            passive: false,
+            actions: [
+                {
+                    type: "subTransition",
+                    speed: 0,
+                    action: [
+                        "panel-enlarged_panel-open"
+                    ]
+                },
+                {
+                    type: "domAction",
+                    speed: 500,
+                    action: () => {
+                        // just wait and do nothing
+                    }
+                },
+                {
+                    type: "subTransition",
+                    speed: 0,
+                    action: [
+                        "panel-open_panel-open-muted"
                     ]
                 }
             ]
@@ -879,6 +1132,49 @@
                 }
             }
         },
+        "panel-open_panel-enlarged": {
+            passive: false,
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [160, 200]
+                },
+                {
+                    type: "domAction",
+                    speed: 500,
+                    action: () => {
+                        // apply the enlarged classes on each and also change the style
+
+                        let timerElem = document.querySelector(".timer");
+                        let constantMarkerElem = document.querySelector(".constant-timer-marker");
+                        timerElem.classList.add("enlarged-timer");
+                        constantMarkerElem.classList.add("enlarged-constant-timer-marker");
+                        constantMarkerElem.style.width = "7vw";
+
+                        let sponsorLogoView = document.getElementById("sponsor-logo-view");
+                        let additionalDetailsView = document.getElementById("additional-details-view");
+                        let scheduleEnlargedView = document.getElementById("schedule-enlarged-view");
+                        sponsorLogoView.style.opacity = 1;
+                        additionalDetailsView.style.opacity = 1;
+                        scheduleEnlargedView.style.opacity = 1;
+
+                    }
+                }
+            ],
+            // define final state to both CHECK and in case something goes wrong during a transition
+            finalState: {
+                "sponsor-logo-view": {
+                    opacity: 1
+                },
+                "additional-details-view": {
+                    opacity: 1
+                },
+                "schedule-enlarged-view": {
+                    opacity: 1
+                }
+            }
+        },
         "panel-enlarged_panel-closed": {
             passive: false,
             actions: [
@@ -886,6 +1182,50 @@
                     type: "lottieAction",
                     speed: 1.5,
                     action: [159, 120]
+                },
+                {
+                    type: "domAction",
+                    speed: 500,
+                    action: () => {
+
+                        // remove the enlarged classes on each and also change the style
+
+                        let timerElem = document.querySelector(".timer");
+                        let constantMarkerElem = document.querySelector(".constant-timer-marker");
+                        timerElem.classList.remove("enlarged-timer");
+                        constantMarkerElem.classList.remove("enlarged-constant-timer-marker");
+                        constantMarkerElem.style.width = "6vw";
+
+                        let sponsorLogoView = document.getElementById("sponsor-logo-view");
+                        let additionalDetailsView = document.getElementById("additional-details-view");
+                        let scheduleEnlargedView = document.getElementById("schedule-enlarged-view");
+                        sponsorLogoView.style.opacity = 0;
+                        additionalDetailsView.style.opacity = 0;
+                        scheduleEnlargedView.style.opacity = 0;
+
+                    }
+                }
+            ],
+            // define final state to both CHECK and in case something goes wrong during a transition
+            finalState: {
+                "sponsor-logo-view": {
+                    opacity: 0
+                },
+                "additional-details-view": {
+                    opacity: 0
+                },
+                "schedule-enlarged-view": {
+                    opacity: 0
+                }
+            }
+        },
+        "panel-enlarged_panel-open": {
+            passive: false,
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [199, 160]
                 },
                 {
                     type: "domAction",
@@ -1006,6 +1346,12 @@
                 // run the action and wait for the specified time
                 await timeout_waitForAnimation(actionObj.speed, actionObj.action);
             }else if(actionObj.type == "lottieAction"){
+
+                // if the beginning and end are the same, skip and set the frame
+                if(actionObj.action[0] == actionObj.action[1]){
+                    animation.goToAndStop(actionObj.action[0], true);
+                    continue;
+                }
                 // run the animation and do not care about the time of it
                 // we can manually time based on the transition
                 animation.setSpeed(actionObj.speed);
@@ -1058,13 +1404,53 @@
     function loop_master(){
         loop_updateTimer();
         loop_debugUpdateState();
-        loop_transition();  
         loop_sponsor();
+        loop_transition();  
+
 
         // for expanded view only
         loop_expandScheduleView();
     
         
+    }
+
+    async function upNowUpNextSync(){
+        let upNowUpNext = document.getElementById("upnow-upnext");
+        let upNowUpNextSpan = upNowUpNext.getElementsByTagName("span")[0];
+
+        upNowUpNext.style.opacity = 0;
+        await timeout_waitForAnimation(5000, () => {});
+
+        let allScheduleItems = localStateInformation.schedule.allScheduleItems;
+        let activeScheduleItems = localStateInformation.schedule.currentScheduleItems;
+
+        let nameString = "";
+        if(activeScheduleItems.length > 0){
+            for(let i = 0; i < activeScheduleItems.length; i++){
+                let itemId = activeScheduleItems[i];
+                let item = allScheduleItems.find(sched => sched.id == itemId);
+                if(!item) continue;
+                nameString += item.name;
+                if(i < activeScheduleItems.length - 1){
+                    nameString += " / ";
+                }
+            }
+        }else{
+            nameString = "No Scheduled Items";
+        }
+
+        upNowUpNextSpan.innerText = nameString;
+        upNowUpNext.style.opacity = 1;
+
+        await timeout_waitForAnimation(5000, () => {});
+        upNowUpNext.style.opacity = 0;
+        await timeout_waitForAnimation(1000, () => {});
+        upNowUpNextSpan.innerText = "Nothing upcoming!";
+        upNowUpNext.style.opacity = 1;
+
+        await timeout_waitForAnimation(8000, () => {});
+        upNowUpNext.style.opacity = 0;
+
     }
 
     function loop_transition(){
@@ -1102,11 +1488,14 @@
         else if(requestedStage && (waitingForSponsor || passiveTransition)){
 
             let stateVars = states[requestedStage];
+            // check the current stage
             let oldAllowSponsorChange = localStateInformation.sponsor.allowSponsorChange;
             if((localStateInformation.sponsor.allowSponsorChange == "NONE" || stateVars.allowSponsorChange != oldAllowSponsorChange) && localStateInformation.sponsor.lottieState){
                 localStateInformation.sponsor.lottieState.goToAndStop(0, true);
                 localStateInformation.sponsor.waitFrames += 20; // add extra wait frames to allow sponsor to reset
             }
+
+
 
             
 
@@ -1213,6 +1602,50 @@
         }
     }
 
+    async function switch_sponsor_logo(sponsorVersion){
+        // go through all of the sponsor segments and switch the opacity of the img inside
+        let sponsorLogoView = document.getElementById("sponsor-logo-view");
+        let activeSponsorLogoView = document.getElementById("active-sponsor-logo");
+        let beRightBackSponsorLogoView = document.getElementById("be-right-back-sponsor-view");
+
+        let sponsorLogoViewImg = activeSponsorLogoView.getElementsByTagName("img")[0];
+        let activeSponsorLogoViewImg = sponsorLogoView.getElementsByTagName("img")[0];
+        let beRightBackSponsorLogoViewImg = beRightBackSponsorLogoView.getElementsByTagName("img")[0];
+
+        let darkImg = sponsorVersion.darkFile;
+        let lightImg = sponsorVersion.lightFile;
+
+        // fade out current logo
+        sponsorLogoViewImg.style.opacity = 0;
+        activeSponsorLogoViewImg.style.opacity = 0;
+        beRightBackSponsorLogoViewImg.style.opacity = 0;
+        
+        // wait for fade out
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        // if the image is tall, then set the activeSponsorLogoViewImg to have the tall class
+        if(sponsorVersion.option == "tall"){
+            activeSponsorLogoView.classList.add("tall");
+        }else{
+            activeSponsorLogoView.classList.remove("tall");
+        }
+
+        sponsorLogoViewImg.src = lightImg;
+        activeSponsorLogoViewImg.src = lightImg;
+        beRightBackSponsorLogoViewImg.src = darkImg;
+
+        // wait a bit
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // fade in new logo
+        sponsorLogoViewImg.style.opacity = 1;
+        activeSponsorLogoViewImg.style.opacity = 1;
+        beRightBackSponsorLogoViewImg.style.opacity = 1;
+
+        localStateInformation.sponsor.isCurrentlyActive = false;
+        localStateInformation.sponsor.waitFrames = 20; // reset wait frames
+    }
+
     function loop_sponsor(){
         // check if there needs to be a new sponsor
         let waitingForSponsor = !localStateInformation.sponsor.isCurrentlyActive;
@@ -1225,6 +1658,14 @@
             localStateInformation.sponsor.currentIndex = nextIndex;
             localStateInformation.sponsor.currentSponsor = sponsors[nextIndex];
 
+            // override allowSponsorChange
+            if(localStateInformation.scene.sceneRequest){
+                let requestedSceneName = localStateInformation.scene.sceneRequest.scene;
+                if(requestedSceneName == "BeRightBack"){
+                    allowSponsorChange = "logo";
+                }
+            }
+
 
             // before we set isCurrentlyActive, we need to check if this sponsor has the requested version
             let sponsorVersion = localStateInformation.sponsor.currentSponsor.versions[allowSponsorChange];
@@ -1234,33 +1675,47 @@
                 localStateInformation.sponsor.waitFrames = 1;
                 return;
             }
+
+            // if we're on logo mode, then we want to set the image instead of running the animation...
+            // we will just run an async thing in the background to play this...
+
+            if(allowSponsorChange == "logo"){
+                switch_sponsor_logo(sponsorVersion);
+            }else{
+                // now direct the sponsor animation to play
             
+                document.getElementById("sponsor").innerHTML = ""; // clear previous animation container
+                localStateInformation.sponsor.lottieState = bodymovin.loadAnimation({
+                    container: document.getElementById('sponsor'),
+                    renderer: 'svg',
+                    loop: false,
+                    autoplay: false,
+                    path: sponsorVersion.animationPath,
+                    name: localStateInformation.sponsor.currentSponsor.name
+                });
+
+                localStateInformation.sponsor.waitFrames = 5; // reset wait frames
+
+                localStateInformation.sponsor.lottieState.setSpeed(sponsorVersion.speed);
+
+                // if we are runing up now up next, run the function
+                if(localStateInformation.sponsor.currentSponsor.name == "Up Next, Up Now"){
+                    upNowUpNextSync();
+                }
+
+                localStateInformation.sponsor.lottieState.playSegments(sponsorVersion.frames, true);
+
+                localStateInformation.sponsor.lottieState.addEventListener("complete", function(){
+                    // mark sponsor as inactive
+                    localStateInformation.sponsor.isCurrentlyActive = false;
+                    // remove event listener
+                    localStateInformation.sponsor.lottieState.removeEventListener("complete", arguments.callee);
+                });
+            }
 
             localStateInformation.sponsor.isCurrentlyActive = true;
 
-            // now direct the sponsor animation to play
             
-            document.getElementById("sponsor").innerHTML = ""; // clear previous animation container
-            localStateInformation.sponsor.lottieState = bodymovin.loadAnimation({
-                container: document.getElementById('sponsor'),
-                renderer: 'svg',
-                loop: false,
-                autoplay: false,
-                path: sponsorVersion.animationPath,
-                name: localStateInformation.sponsor.currentSponsor.name
-            });
-
-            localStateInformation.sponsor.waitFrames = 5; // reset wait frames
-
-            localStateInformation.sponsor.lottieState.setSpeed(sponsorVersion.speed);
-            localStateInformation.sponsor.lottieState.playSegments(sponsorVersion.frames, true);
-
-            localStateInformation.sponsor.lottieState.addEventListener("complete", function(){
-                // mark sponsor as inactive
-                localStateInformation.sponsor.isCurrentlyActive = false;
-                // remove event listener
-                localStateInformation.sponsor.lottieState.removeEventListener("complete", arguments.callee);
-            });
         }else if(waitingForSponsor && allowSponsorChange){
             localStateInformation.sponsor.waitFrames -= 1;
         }
@@ -1312,10 +1767,12 @@
             hours = hours % 12;
             if(hours == 0) hours = 12; // show 12 instead of 0
 
+            let amorpm = currentDate.getHours() >= 12 ? "PM" : "AM";
+
             timerElement.innerText = 
                 (hours < 10 ? "0" + hours : hours) + ":" + 
-                (minutes < 10 ? "0" + minutes : minutes) + ":" + 
-                (seconds < 10 ? "0" + seconds : seconds);
+                (minutes < 10 ? "0" + minutes : minutes) + "" + 
+                amorpm;
         }
         
     }
@@ -1375,6 +1832,10 @@
                 // playTransition("panel-enlarged");
                 localStateInformation.overlay.requestedStage = "panel-enlarged";
                 break;  
+            case "7":
+                // playTransition("panel-enlarged");
+                localStateInformation.overlay.requestedStage = "panel-active";
+                break;  
         }
     }
 
@@ -1424,6 +1885,8 @@
 
         localStateInformation.schedule.needToChangeScheduleItems = true;
 
+        if(MANUALEDIT) return;
+ 
         let sceneRequest = config.camera.sceneRequest;
         if(!sceneRequest.scene){
             // then get the activeSceneRequest instead
