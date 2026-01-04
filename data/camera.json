@@ -1,5 +1,5 @@
 {
-  "playTransition": 108,
+  "playTransition": 122,
   "available": [
     "ITCam1",
     "ITCam2"
@@ -10,22 +10,22 @@
     {
       "id": "320577a4",
       "name": "Camera 1",
-      "url": "",
+      "url": "http://streamingwebcams.mtu.edu:1935/rtplive/camera051-high.stream/playlist.m3u8",
       "x": 0,
       "y": 0,
-      "width": 1920,
-      "height": 1080,
-      "type": "unknown"
+      "width": "1",
+      "height": "1",
+      "type": "media"
     },
     {
       "id": "627b3eee",
       "name": "Camera 2",
-      "url": "",
+      "url": "https://usg.mtu.edu/constitution-changes",
       "x": 0,
       "y": 0,
       "width": 1920,
       "height": 1080,
-      "type": "unknown"
+      "type": "web"
     },
     {
       "id": "f8c2310e",
@@ -39,8 +39,8 @@
     }
   ],
   "livePreview": {
-    "id": "acf873ba",
-    "preview": null
+    "id": "627b3eee",
+    "preview": "off"
   },
   "sceneRequest": {
     "scene": "Passive",
@@ -49,9 +49,9 @@
     ]
   },
   "activeSceneRequest": {
-    "scene": "BeRightBack",
+    "scene": "Present",
     "cameras": [
-      "acf873ba"
+      "320577a4"
     ]
   }
 }

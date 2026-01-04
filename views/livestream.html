@@ -665,8 +665,8 @@
             "schedule-enlarged-view": "schedule-enlarged-view",
             "sponsor": "lottie",
             "muted": "muted-text",
-            "timer-div": "timer clock",
-            "timer-marker": "constant-timer-marker",
+            // "timer-div": "timer clock",
+            // "timer-marker": "constant-timer-marker",
             "active-sponsor-logo": "active-sponsor-logo",
             "be-right-back-sponsor-view": "be-right-back-sponsor-view hide"
         },
@@ -1828,6 +1828,7 @@
 
         // some other modifiers depending on scene...
         if(scene == "Present"){
+            // if the current stage is alread7y panel-active, do nothing
             // then put the currentStage inside of the cachedStage
             localStateInformation.overlay.cachedStage = localStateInformation.overlay.currentStage;
             // then force transition to panel-active

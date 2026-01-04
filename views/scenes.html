@@ -193,6 +193,7 @@
                 let camIndex = cameras.findIndex(cam => cam.id === cameraManagement.selectedId);
                 cameras[camIndex].type = selectedOptions["cameraSourceType"]["selected"];
                 updateAllCameraLists();
+                updateServerWithCameras();
             },
             "livePreview": () => {
                 // a combo between the selected camera id and the livePreview option
@@ -566,6 +567,7 @@
                     if(mappedValue == null) return;
                     multiButtonSelect("curScene", mappedValue, "before");
                     setupSceneOptions("before");
+                    updateActiveSceneRequestDisplay();
                 }
             }
             else if(group == "camera"){
@@ -699,6 +701,7 @@
 
 
             updateAllCameraLists();
+            updateServerWithCameras();
         }
 
         function deleteCamera(id){
@@ -748,6 +751,7 @@
             }
 
             updateAllCameraLists();
+            updateServerWithCameras();
         }
 
         function addCamera(){
