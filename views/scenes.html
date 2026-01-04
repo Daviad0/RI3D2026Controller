@@ -201,9 +201,13 @@
                     preview: selectedOptions["livePreview"]["selected"]
                 }
 
+                currentLivePreview = livePreview;
+
                 socket.emit("changeData", "camera", "livePreview", livePreview);
             }
         }
+
+        let currentLivePreview = null;
 
         let isRequest = ["curScene", "streamSound"];
 
@@ -248,7 +252,7 @@
                     <br/>
                     <div class="flex-apart">
                         <h3>Primary Camera</h3>
-                        <select class="camera_list" name="passive_primaryCam">
+                        <select onchange="changeSceneRequestSelect(event)" class="camera_list" name="passive_primaryCam">
                             <option value="Camera 1">Camera 1</option>
                             <option value="Camera 2">Camera 2</option>
                             <option value="Camera 3">Camera 3</option>
@@ -274,7 +278,7 @@
                     <br/>
                     <div class="flex-apart">
                         <h3>Primary Camera</h3>
-                        <select class="camera_list" name="passive_primaryCam">
+                        <select onchange="changeSceneRequestSelect(event)" class="camera_list" name="passive_primaryCam">
                             <option value="Camera 1">Camera 1</option>
                             <option value="Camera 2">Camera 2</option>
                             <option value="Camera 3">Camera 3</option>
@@ -297,16 +301,12 @@
                     <br/>
                     <div class="flex-apart">
                         <h3>Background Camera</h3>
-                        <select class="camera_list" name="passive_primaryCam">
+                        <select onchange="changeSceneRequestSelect(event)" class="camera_list" name="passive_primaryCam">
                             <option value="Camera 1">Camera 1</option>
                             <option value="Camera 2">Camera 2</option>
                             <option value="Camera 3">Camera 3</option>
                             <option value="Camera 4">Camera 4</option>
                         </select>
-                    </div>
-                    <div class="flex-apart comfort-margin-top-bottom">
-                        <h3>Message</h3>
-                        <input type="text" name="message" style="width: 300px;" placeholder="We'll Be Right Back"/>
                     </div>
                     <div class="flex-apart comfort-margin-top-bottom">
                         <h3>Overlay Management</h3>
@@ -327,7 +327,7 @@
                     <br/>
                     <div class="flex-apart">
                         <h3>Large Camera</h3>
-                        <select class="camera_list" name="passive_primaryCam">
+                        <select onchange="changeSceneRequestSelect(event)" class="camera_list" name="passive_primaryCam">
                             <option value="Camera 1">Camera 1</option>
                             <option value="Camera 2">Camera 2</option>
                             <option value="Camera 3">Camera 3</option>
@@ -336,7 +336,7 @@
                     </div>
                     <div class="flex-apart comfort-margin-top-bottom">
                         <h3>Small Camera</h3>
-                        <select class="camera_list" name="passive_primaryCam">
+                        <select onchange="changeSceneRequestSelect(event)" class="camera_list" name="passive_primaryCam">
                             <option value="Camera 1">Camera 1</option>
                             <option value="Camera 2">Camera 2</option>
                             <option value="Camera 3">Camera 3</option>
@@ -360,15 +360,6 @@
                         </div>
                     </div>
                     <br/>
-                    <div class="flex-apart">
-                        <h3>Primary Camera</h3>
-                        <select class="camera_list" name="passive_primaryCam">
-                            <option value="Camera 1">Camera 1</option>
-                            <option value="Camera 2">Camera 2</option>
-                            <option value="Camera 3">Camera 3</option>
-                            <option value="Camera 4">Camera 4</option>
-                        </select>
-                    </div>
                     <div class="flex-apart comfort-margin-top-bottom">
                         <h3>Overlay Management</h3>
                         <button onclick="window.open('/manager', '_blank')" class="bg-secondary">Open Overlay Manager</button>
@@ -448,6 +439,27 @@
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
+        }
+
+        function updateActiveSceneRequestDisplay(){
+            let sceneRequestDisplay = document.getElementsByName("scene-options-active")[0];
+            // get the <select> elements
+            let cameraSelects = sceneRequestDisplay.querySelectorAll(".camera_list");
+            let camerasSelected = activeSceneRequest.cameras || [];
+            for(let i = 0; i < cameraSelects.length; i++){
+                let camSelect = cameraSelects[i];
+                camSelect.value = camerasSelected[i] || "";
+                // also remove the awaiting class
+                camSelect.classList.remove("awaiting");
+            }
+
+            // and then set them to not 
+        }
+
+        function changeSceneRequestSelect(ev){
+            let element = ev.currentTarget;
+            // add the awaiting class
+            element.classList.add("awaiting");
         }
 
         function selectMultiButton(ev){
@@ -536,6 +548,9 @@
             });
             updateAllCameraLists(true);
 
+            let livePreview = config.camera.livePreview || {};
+            reactToDataChange("camera", "livePreview", livePreview);
+
             let currentScene = config.obs_state.currentScene;
             reactToDataChange("obs_state", "currentScene", currentScene);
 
@@ -556,6 +571,7 @@
             else if(group == "camera"){
                 if(key == "activeSceneRequest"){
                     activeSceneRequest = value;
+                    updateActiveSceneRequestDisplay();
                 }
             }
         }
@@ -603,6 +619,12 @@
 
             // and then select the source type button
             multiButtonSelect("cameraSourceType", cam.type, "selected");
+            // also select the live preview button to whatever the live preview is set to
+            if(currentLivePreview != null){
+                multiButtonSelect("livePreview", currentLivePreview.preview, "selected");
+            }else{
+                multiButtonSelect("livePreview", "off", "selected");
+            }
 
             // finally, highlight the selected camera div
             let selectedCamDiv = cameraDivs.entries().find(([index, camDiv]) => {
@@ -658,7 +680,6 @@
             }
 
             if(visualOnly) return;
-            updateServerWithCameras();
         }
 
         function changeCameraDetails(e){
@@ -708,6 +729,8 @@
             }
 
             updateAllCameraLists();
+            updateServerWithCameras();
+
         }
 
         function changeCameraDetailsOfSelected(e){
@@ -746,6 +769,8 @@
             });
 
             updateAllCameraLists();
+            updateServerWithCameras();
+
         }
 
         function submitSceneRequest(){

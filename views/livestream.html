@@ -588,15 +588,18 @@
         overlay: {
             currentStage: "panel-open-muted",
             requestedStage: null,
+            cachedStage: null,
+            initialStageToLoad: "panel-open-muted",
             transitionState: {
                 targetTransition: "",
                 transitionLock: false,
                 transitionSignal: null
-            }
+            },
+            forceTransitions: "animation" // force, animation
         },
         timer: {
             targetTime: null,
-            mode: "clock" // or clock
+            mode: "clock" // disabled, time, countdown
         },
         camera: {
             isTransitioning: false,
@@ -707,7 +710,240 @@
     }
     // transitions include START and END frames
     // if START > END, the animation plays in reverse
+    // if START = END, no animation is played
+    // force_final-state ensures that the final state is applied even if the transition fails (or we are at the beginning)
     var transitions = {
+        "force_panel-open": {
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [30, 30]
+                },
+                {
+                    type: "domAction",
+                    speed: 0,
+                    action: (incoming) => {
+
+                        let timerElem = document.querySelector(".timer");
+                        let constantMarkerElem = document.querySelector(".constant-timer-marker");
+                        timerElem.classList.remove("enlarged-timer");
+                        constantMarkerElem.classList.remove("enlarged-constant-timer-marker");
+                        constantMarkerElem.style.width = "";
+
+                        let sponsorLogoView = document.getElementById("sponsor-logo-view");
+                        let additionalDetailsView = document.getElementById("additional-details-view");
+                        let scheduleEnlargedView = document.getElementById("schedule-enlarged-view");
+                        sponsorLogoView.style.opacity = 0;
+                        additionalDetailsView.style.opacity = 0;
+                        scheduleEnlargedView.style.opacity = 0;
+
+                        timerElem.classList.remove("active-timer");
+                        constantMarkerElem.classList.remove("active-constant-timer-marker");
+                        // hide the muted text
+                        document.getElementById("muted").style.opacity = 0;
+                        // if incoming contains panel-open, then don't force
+                        if(!incoming.includes("panel-open")){
+                            force_sponsor_stop();
+                            return;
+                        }
+                    }
+                }
+            ]
+        },
+        "force_panel-open-muted": {
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [0, 0]
+                },
+                {
+                    type: "domAction",
+                    speed: 0,
+                    action: (incoming) => {
+                        let timerElem = document.querySelector(".timer");
+                        let constantMarkerElem = document.querySelector(".constant-timer-marker");
+                        timerElem.classList.remove("enlarged-timer");
+                        constantMarkerElem.classList.remove("enlarged-constant-timer-marker");
+                        constantMarkerElem.style.width = "";
+
+                        let sponsorLogoView = document.getElementById("sponsor-logo-view");
+                        let additionalDetailsView = document.getElementById("additional-details-view");
+                        let scheduleEnlargedView = document.getElementById("schedule-enlarged-view");
+                        sponsorLogoView.style.opacity = 0;
+                        additionalDetailsView.style.opacity = 0;
+                        scheduleEnlargedView.style.opacity = 0;
+
+                        timerElem.classList.remove("active-timer");
+                        constantMarkerElem.classList.remove("active-constant-timer-marker");
+
+                        // show the muted text
+                        document.getElementById("muted").style.opacity = 1;
+                        // if incoming contains panel-open
+                        if(!incoming.includes("panel-open")){
+                            force_sponsor_stop();
+                            return;
+                        }
+                    }
+                }
+            ]
+        },
+        "force_panel-closed": {
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [120, 120]
+                },
+                {
+                    type: "domAction",
+                    speed: 0,
+                    action: (incoming) => {
+
+                        let timerElem = document.querySelector(".timer");
+                        let constantMarkerElem = document.querySelector(".constant-timer-marker");
+                        timerElem.classList.remove("enlarged-timer");
+                        constantMarkerElem.classList.remove("enlarged-constant-timer-marker");
+                        constantMarkerElem.style.width = "";
+
+                        let sponsorLogoView = document.getElementById("sponsor-logo-view");
+                        let additionalDetailsView = document.getElementById("additional-details-view");
+                        let scheduleEnlargedView = document.getElementById("schedule-enlarged-view");
+                        sponsorLogoView.style.opacity = 0;
+                        additionalDetailsView.style.opacity = 0;
+                        scheduleEnlargedView.style.opacity = 0;
+
+                        timerElem.classList.remove("active-timer");
+                        constantMarkerElem.classList.remove("active-constant-timer-marker");
+                        // hide the muted text
+                        document.getElementById("muted").style.opacity = 0;
+                        // if incoming contains panel-closed, then don't force
+                        if(!incoming.includes("panel-closed")){
+                            force_sponsor_stop();
+                            return;
+                        }
+                    }
+                }
+            ]
+        },
+        "force_panel-closed-muted": {
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [90, 90]
+                },
+                {
+                    type: "domAction",
+                    speed: 0,
+                    action: (incoming) => {
+
+                        let timerElem = document.querySelector(".timer");
+                        let constantMarkerElem = document.querySelector(".constant-timer-marker");
+                        timerElem.classList.remove("enlarged-timer");
+                        constantMarkerElem.classList.remove("enlarged-constant-timer-marker");
+                        constantMarkerElem.style.width = "";
+
+                        let sponsorLogoView = document.getElementById("sponsor-logo-view");
+                        let additionalDetailsView = document.getElementById("additional-details-view");
+                        let scheduleEnlargedView = document.getElementById("schedule-enlarged-view");
+                        sponsorLogoView.style.opacity = 0;
+                        additionalDetailsView.style.opacity = 0;
+                        scheduleEnlargedView.style.opacity = 0;
+
+                        timerElem.classList.remove("active-timer");
+                        constantMarkerElem.classList.remove("active-constant-timer-marker");
+                        // show the muted text
+                        document.getElementById("muted").style.opacity = 1;
+                        // if incoming contains panel-closed, then don't force
+                        if(!incoming.includes("panel-closed")){
+                            force_sponsor_stop();
+                            return;
+                        }
+                    }
+                }
+            ]
+        },
+        "force_panel-enlarged": {
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [159, 159]
+                },
+                {
+                    type: "domAction",
+                    speed: 0,
+                    action: (incoming) => {
+
+                        let timerElem = document.querySelector(".timer");
+                        let constantMarkerElem = document.querySelector(".constant-timer-marker");
+                        timerElem.classList.add("enlarged-timer");
+                        constantMarkerElem.classList.add("enlarged-constant-timer-marker");
+                        constantMarkerElem.style.width = "7vw";
+
+                        let sponsorLogoView = document.getElementById("sponsor-logo-view");
+                        let additionalDetailsView = document.getElementById("additional-details-view");
+                        let scheduleEnlargedView = document.getElementById("schedule-enlarged-view");
+                        sponsorLogoView.style.opacity = 1;
+                        additionalDetailsView.style.opacity = 1;
+                        scheduleEnlargedView.style.opacity = 1;
+
+                        timerElem.classList.remove("active-timer");
+                        constantMarkerElem.classList.remove("active-constant-timer-marker");
+
+                        // hide the muted text
+                        document.getElementById("muted").style.opacity = 0;
+                        // if incoming contains panel-enlarged, then don't force
+                        if(!incoming.includes("panel-enlarged")){
+                            force_sponsor_stop();
+                            return;
+                        }
+                    }
+                }
+            ]
+        },
+        "force_panel-active": {
+            actions: [
+                {
+                    type: "lottieAction",
+                    speed: 1.5,
+                    action: [200, 200]
+                },
+                {
+                    type: "domAction",
+                    speed: 0,
+                    action: (incoming) => {
+
+                        let timerElem = document.querySelector(".timer");
+                        let constantMarkerElem = document.querySelector(".constant-timer-marker");
+                        timerElem.classList.remove("enlarged-timer");
+                        constantMarkerElem.classList.remove("enlarged-constant-timer-marker");
+                        constantMarkerElem.style.width = "";
+
+                        let sponsorLogoView = document.getElementById("sponsor-logo-view");
+                        let additionalDetailsView = document.getElementById("additional-details-view");
+                        let scheduleEnlargedView = document.getElementById("schedule-enlarged-view");
+                        sponsorLogoView.style.opacity = 0;
+                        additionalDetailsView.style.opacity = 0;
+                        scheduleEnlargedView.style.opacity = 0;
+
+                        // hide the muted text
+                        document.getElementById("muted").style.opacity = 0;
+                        
+                        timerElem.classList.add("active-timer");
+                        constantMarkerElem.classList.add("active-constant-timer-marker");
+                        
+                        // if incoming contains panel-active, then don't force
+                        if(!incoming.includes("panel-active")){
+                            force_sponsor_stop();
+                            return;
+                        }
+                    }
+                }
+            ]
+        },
         "panel-open_panel-active": {
             actions: [
                 {
@@ -766,7 +1002,7 @@
                 {
                     type: "lottieAction",
                     speed: 1.5,
-                    action: [0, 29]
+                    action: [0, 30]
                 }
             ],
             // define final state to both CHECK and in case something goes wrong during a transition
@@ -1313,7 +1549,9 @@
         
     }
 
-    async function playTransition(toStage){
+    async function playTransition(toStage, manualTransitionKey=null){
+
+        let incomingTransition = localStateInformation.overlay.currentStage;
 
         // check transition lock
         if(localStateInformation.overlay.transitionState.transitionLock){
@@ -1324,9 +1562,17 @@
 
         localStateInformation.overlay.transitionState.transitionSignal = "active";
 
+        var transitionKey = "";
+        if(manualTransitionKey){
+            transitionKey = manualTransitionKey;
+        }else{
+            let currentStage = localStateInformation.overlay.currentStage;
+            var transitionKey = currentStage + "_" + toStage;
+        }
+        
 
-        let currentStage = localStateInformation.overlay.currentStage;
-        var transitionKey = currentStage + "_" + toStage;
+
+        
 
         // now we get transition ACTIONS between these states
         // run each action and await for each one of them...
@@ -1487,6 +1733,13 @@
         }
         else if(requestedStage && (waitingForSponsor || passiveTransition)){
 
+            let hasForce = requestedStage.includes("FORCE");
+            if(hasForce){
+                // then REMOVE from the name
+                requestedStage = requestedStage.replace("FORCE", "");
+                localStateInformation.overlay.requestedStage = requestedStage;
+            }
+
             let stateVars = states[requestedStage];
             // check the current stage
             let oldAllowSponsorChange = localStateInformation.sponsor.allowSponsorChange;
@@ -1495,11 +1748,28 @@
                 localStateInformation.sponsor.waitFrames += 20; // add extra wait frames to allow sponsor to reset
             }
 
+            
+            let forcedTransitionKey = null;
+            // check if we should force the transition
+            let forceTransitions = localStateInformation.overlay.forceTransitions;
+            if(forceTransitions == "force" || hasForce){
+                forcedTransitionKey = "force_" + requestedStage;
+            }
 
 
             
 
-            playTransition(requestedStage);
+            playTransition(requestedStage, forcedTransitionKey);
+        }else if(requestedStage && (localStateInformation.overlay.forceTransitions == "force" || requestedStage.includes("FORCE"))){
+            // if we are forcing transitions, we can ignore sponsor state
+            let hasForce = requestedStage.includes("FORCE");
+            if(hasForce){
+                // then REMOVE from the name
+                requestedStage = requestedStage.replace("FORCE", "");
+                localStateInformation.overlay.requestedStage = requestedStage;
+            }
+            playTransition(requestedStage, "force_" + requestedStage);
+            force_sponsor_stop();
         }
     }
 
@@ -1541,7 +1811,7 @@
         }
     }
 
-    function reactToSceneRequestChange(){
+    function reactToSceneRequestChange(firstTime=false){
         let requestedScene = localStateInformation.scene.sceneRequest;
         if(!requestedScene) return;
 
@@ -1552,6 +1822,24 @@
             let element = document.getElementById(elementId);
             let className = sceneClassObj[elementId];
             element.className = className;
+        }
+
+        if(firstTime) return;
+
+        // some other modifiers depending on scene...
+        if(scene == "Present"){
+            // then put the currentStage inside of the cachedStage
+            localStateInformation.overlay.cachedStage = localStateInformation.overlay.currentStage;
+            // then force transition to panel-active
+            localStateInformation.overlay.requestedStage = "panel-activeFORCE";
+            if(localStateInformation.overlay.cachedStage == "panel-active"){
+                // it cannot be cachedStage
+                localStateInformation.overlay.cachedStage = "panel-open";
+            }
+        }else{
+            // then restore the cached stage
+            let cachedStage = localStateInformation.overlay.cachedStage;
+            localStateInformation.overlay.requestedStage = cachedStage + "FORCE";
         }
     }
 
@@ -1646,6 +1934,14 @@
         localStateInformation.sponsor.waitFrames = 20; // reset wait frames
     }
 
+    function force_sponsor_stop(){
+        if(localStateInformation.sponsor.lottieState){
+            localStateInformation.sponsor.lottieState.goToAndStop(0, true);
+        }
+        localStateInformation.sponsor.isCurrentlyActive = false;
+        localStateInformation.sponsor.waitFrames = 5; // reset wait frames
+    }
+
     function loop_sponsor(){
         // check if there needs to be a new sponsor
         let waitingForSponsor = !localStateInformation.sponsor.isCurrentlyActive;
@@ -1737,27 +2033,37 @@
 
     }
 
+
     function loop_updateTimer(){
         let timerElement = document.getElementById("timer");
         let now = new Date().getTime();
 
         // check by mode... if countdown, show time remaining
         if(localStateInformation.timer.mode == "countdown"){
+            timerElement.style.fontSize = "";
             let distance = localStateInformation.timer.targetTime - now;
             if(distance < 0){
                 timerElement.innerText = "00:00:00";
                 return;
             }
 
-            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            // show max of 99 hours (anything more will just show as ++:xx:xx)
+            // if distance > 99 hours, then show ++:xx:xx
+            if(distance > 99 * 60 * 60 * 1000){
+                timerElement.innerText = "TooLong";
+                return;
+            }
+
+            let hours = Math.floor((distance % (100 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            let minutes = Math.floor((distance % (60 * 60 * 1000)) / (60 * 1000));
+            let seconds = Math.floor((distance % (60 * 1000)) / 1000);
 
             timerElement.innerText = 
                 (hours < 10 ? "0" + hours : hours) + ":" + 
                 (minutes < 10 ? "0" + minutes : minutes) + ":" + 
                 (seconds < 10 ? "0" + seconds : seconds);
-        }else if(localStateInformation.timer.mode == "clock"){
+        }else if(localStateInformation.timer.mode == "time"){
+            timerElement.style.fontSize = "";
             let currentDate = new Date(now);
             let hours = currentDate.getHours();
             let minutes = currentDate.getMinutes();
@@ -1773,6 +2079,9 @@
                 (hours < 10 ? "0" + hours : hours) + ":" + 
                 (minutes < 10 ? "0" + minutes : minutes) + "" + 
                 amorpm;
+        }else if(localStateInformation.timer.mode == "disabled"){
+            timerElement.innerText = "RI3D@MTU";
+            timerElement.style.fontSize = "7vw";
         }
         
     }
@@ -1780,7 +2089,8 @@
     // run functionToCall and then wait for time (ms)   
     // allows animations to be began and then ran asynchronously
     function timeout_waitForAnimation(time, functionToCall){
-        functionToCall();
+        let incomingState = localStateInformation.overlay.currentStage;
+        functionToCall(incomingState);
         return new Promise(resolve => {
             setTimeout(() => {
                 resolve();
@@ -1788,7 +2098,17 @@
         });
     }
 
-    setInterval(loop_master, 200);
+    async function init(){
+        // we need the initial state to be FORCED
+        let initialRequestedState = localStateInformation.overlay.initialStageToLoad;
+        let forceTransitionKey = "force_" + initialRequestedState;
+        localStateInformation.overlay.requestedStage = initialRequestedState;
+        await playTransition(initialRequestedState, forceTransitionKey);
+
+        // THEN we can setInterval for the main loop
+        setInterval(loop_master, 200);
+    }
+
     
 
     window.onkeyup = function(event){
@@ -1865,6 +2185,7 @@
         // document.body.style.backgroundColor = "white"; // reset background color
     });
 
+
     socket.on("connect", function(){
         console.log("Connected to server via websocket.");
         // send to socket that the requestedStage was handled
@@ -1893,7 +2214,33 @@
             sceneRequest = config.camera.activeSceneRequest;
         }
         localStateInformation.scene.sceneRequest = sceneRequest;
-        reactToSceneRequestChange();
+        reactToSceneRequestChange(true);
+
+        let clockMode = config.constants.clockMode;
+        localStateInformation.timer.mode = clockMode;
+
+        let countdownTarget = config.constants.countdownTarget;
+        if(countdownTarget){
+            localStateInformation.timer.targetTime = new Date(countdownTarget).getTime();
+        }
+
+        let forceTransitions = config.constants.forceTransitions;
+        localStateInformation.overlay.forceTransitions = forceTransitions;
+
+        let requestedStage = config.overlay.requestedStage;
+        // if there is no requested stage, then set to current stage
+        if(!requestedStage){
+            requestedStage = config.overlay.currentStage;
+        }
+        localStateInformation.overlay.initialStageToLoad = requestedStage;
+        localStateInformation.overlay.cachedStage = requestedStage;
+        if(requestedStage == "panel-active"){
+            localStateInformation.overlay.cachedStage = "panel-open";
+        }
+        
+
+        init();
+        
     })
 
     socket.on("dataUpdated", (group, key, value) => {
@@ -1901,6 +2248,12 @@
             if(key == "requestedStage"){
                 // if there are waitframes left... then allow the change
                 if(localStateInformation.sponsor.waitFrames > 0){
+                    // if the current scene is Present, then put the change in cached
+                    let requestedSceneName = localStateInformation.scene.sceneRequest?.scene;
+                    if(requestedSceneName == "Present" && value != null){
+                        localStateInformation.overlay.cachedStage = value;
+                        return;
+                    }
                     localStateInformation.overlay.requestedStage = value;
                     return;
                 }
@@ -1929,6 +2282,16 @@
             }else if(key == "additionalScheduleNotes"){
                 localStateInformation.schedule.additionalScheduleNotes = value;
                 localStateInformation.schedule.needToChangeScheduleItems = true;
+            }
+        }else if(group == "constants"){
+            if(key == "clockMode"){
+                localStateInformation.timer.mode = value;
+            }else if(key == "countdownTarget"){
+                if(value){
+                    localStateInformation.timer.targetTime = new Date(value).getTime();
+                }
+            }else if(key == "forceTransitions"){
+                localStateInformation.overlay.forceTransitions = value;
             }
         }
     });

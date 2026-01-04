@@ -63,6 +63,13 @@
                     <button onclick="playCameraTransition()" class="bg-secondary">Play Transition</button>
                 </div>
                 <div class="flex-apart comfort-margin-top-bottom">
+                    <h3>Force Animations</h3>
+                    <div class="multi-buttons">
+                        <button onclick="selectMultiButton(event)" name="forceTransitions" value="force" class="multi-button bg-secondary">Force</button>
+                        <button onclick="selectMultiButton(event)" name="forceTransitions" value="animation" class="multi-button bg-secondary">Do Not Force</button>
+                    </div>
+                </div>
+                <div class="flex-apart comfort-margin-top-bottom">
                     <h3>Clock Mode</h3>
                     <div class="multi-buttons">
                         <button onclick="selectMultiButton(event)" name="clockMode" value="disabled" class="multi-button bg-secondary">Disabled</button>
@@ -72,7 +79,7 @@
                 </div>
                 <div class="flex-apart comfort-margin-top-bottom">
                     <h3>Countdown Target</h3>
-                    <input type="datetime-local" name="countdownTarget" style="width: 300px;" value=""/>
+                    <input onchange="updateCountdownTarget(event)" type="datetime-local" name="countdownTarget" style="width: 300px;" value=""/>
                 </div>
                 
 
@@ -117,6 +124,8 @@
                 let stage = selectedOptions["reqStage"];
                 if(stage == null){
                     selectedOptions["reqStage"] = selectedOptions["curStage"];
+                    // remove -muted if present
+                    selectedOptions["reqStage"] = selectedOptions["reqStage"].replaceAll("-muted", "");
                 }
 
                 // just rerun the reqStage logic
@@ -141,6 +150,14 @@
             "availableCams": () => {
                 let availableCams = selectedOptions["availableCams"];
                 socket.emit("changeData", "camera", "available", availableCams);
+            },
+            "clockMode": () => {
+                let clockMode = selectedOptions["clockMode"];
+                socket.emit("changeData", "constants", "clockMode", clockMode);
+            },
+            "forceTransitions": () => {
+                let forceTransition = selectedOptions["forceTransitions"];
+                socket.emit("changeData", "constants", "forceTransitions", forceTransition);
             }
         }
 
@@ -175,6 +192,17 @@
 
             reqViewElement.innerText = toRequested;
             currViewElement.innerText = current;
+        }
+
+        function updateCountdownTarget(ev){
+            let inputElement = ev.currentTarget;
+            let targetValue = inputElement.value;
+
+            // convert to ISO string but keep in mind that the input is local time
+            let localDate = new Date(targetValue);
+            let isoString = localDate.toISOString();
+
+            socket.emit("changeData", "constants", "countdownTarget", isoString);
         }
 
         function updateWarningPerCurrentScene(){
@@ -351,6 +379,39 @@
                     currentScene = value;
                     updateWarningPerCurrentScene();
                 }
+            }else if(group == "constants"){
+                if(key == "clockMode"){
+                    selectedOptions["clockMode"] = value;
+
+                    let buttons = document.getElementsByName("clockMode");
+                    buttons.forEach((btn) => {
+                        let val = btn.getAttribute("value");
+                        if(val === value){
+                            btn.classList = "multi-button bg-primary";
+                        }
+                    });
+                }else if(key == "countdownTarget"){
+                    let inputElement = document.getElementsByName("countdownTarget")[0];
+                    // convert to local datetime format
+                    // but keep in mind that the value is in ISO format
+                    // we want to show local time in the input
+                    // the value is in UTC, so we need to convert to local time
+                    let targetDate = new Date(value);
+                    let adjustedDate = new Date(targetDate.getTime() - (targetDate.getTimezoneOffset() * 60000));
+                    let localISOTime = adjustedDate.toISOString().slice(0,16);
+
+                    inputElement.value = localISOTime;
+                }else if(key == "forceTransitions"){
+                    selectedOptions["forceTransitions"] = value;
+
+                    let buttons = document.getElementsByName("forceTransitions");
+                    buttons.forEach((btn) => {
+                        let val = btn.getAttribute("value");
+                        if(val === value){
+                            btn.classList = "multi-button bg-primary";
+                        }
+                    });
+                }
             }
         }
         
@@ -371,12 +432,17 @@
             let preview = config.camera.preview;
             reactToDataChange("camera", "preview", preview);
 
-            let availableCams = config.camera.available;
-            selectedOptions["availableCams"] = availableCams;
-            reactToDataChange("camera", "available", availableCams);
-
             let currentScene = config.obs_state.currentScene;
             reactToDataChange("obs_state", "currentScene", currentScene);
+
+            let clockMode = config.constants.clockMode;
+            reactToDataChange("constants", "clockMode", clockMode);
+
+            let countdownTarget = config.constants.countdownTarget;
+            reactToDataChange("constants", "countdownTarget", countdownTarget);
+
+            let forceTransitions = config.constants.forceTransitions;
+            reactToDataChange("constants", "forceTransitions", forceTransitions);
         });
 
         setInterval(() => {

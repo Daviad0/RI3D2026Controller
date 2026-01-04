@@ -1,5 +1,5 @@
 {
-  "playTransition": 104,
+  "playTransition": 108,
   "available": [
     "ITCam1",
     "ITCam2"
@@ -8,8 +8,28 @@
   "manager": "ws://127.0.0.1:4455",
   "configured": [
     {
-      "id": "cd11710c",
+      "id": "320577a4",
       "name": "Camera 1",
+      "url": "",
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "type": "unknown"
+    },
+    {
+      "id": "627b3eee",
+      "name": "Camera 2",
+      "url": "",
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "type": "unknown"
+    },
+    {
+      "id": "f8c2310e",
+      "name": "Camera 3",
       "url": "",
       "x": 0,
       "y": 0,
@@ -19,14 +39,19 @@
     }
   ],
   "livePreview": {
-    "id": "3e735c2e",
-    "preview": "off"
+    "id": "acf873ba",
+    "preview": null
   },
-  "sceneRequest": {},
-  "activeSceneRequest": {
+  "sceneRequest": {
     "scene": "Passive",
     "cameras": [
-      ""
+      "320577a4"
+    ]
+  },
+  "activeSceneRequest": {
+    "scene": "BeRightBack",
+    "cameras": [
+      "acf873ba"
     ]
   }
 }

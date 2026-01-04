@@ -144,7 +144,10 @@ let globalConfig = {
     },
     constants: {
         publicDocumentsLink: "https://drive.google.com/drive/u/0/folders/1N6PCUuDWNRrZHfQ6jIBQx7Wa8wZkaUfx",
-        publicCalendarLink: "https://calendar.google.com/calendar/embed?src=c_6ad2a24c07de8545d32333b8289aa930a0f82c4e274e1b482afca4f8f9db0df7%40group.calendar.google.com&ctz=America%2FDetroit"
+        publicCalendarLink: "https://calendar.google.com/calendar/embed?src=c_6ad2a24c07de8545d32333b8289aa930a0f82c4e274e1b482afca4f8f9db0df7%40group.calendar.google.com&ctz=America%2FDetroit",
+        clockMode: "countdown", // disabled, time, or countdown
+        countdownTarget: "2026-04-17T10:00:00-04:00", // ISO string
+        forceTransitions: "animation" // force, animation
     }
 };
 

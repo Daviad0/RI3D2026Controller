@@ -82,6 +82,7 @@ button.small-button{
     100% { filter: brightness(.75); }
 }
 
+
 .request-anim{
     animation: request-active 1s infinite;
 }
@@ -105,6 +106,10 @@ select{
     background-color: var(--background-color);
     transition: all 0.3s ease;
     min-width: 200px;
+}
+
+select.awaiting{
+    animation: request-active 1s infinite;
 }
 
 input:active, input:focus{
