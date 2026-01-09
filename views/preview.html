@@ -1,0 +1,235 @@
+<html>
+    <head>
+        <title>Preview</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+        <link rel="stylesheet" href="main.css"/>
+        <!-- socket.io script -->
+        <script src="/ri3d26/socket.io/socket.io.js"></script>
+    </head>
+    <body class="designed-background">
+        <div class="quick-options">
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/home'">home</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/scenes'">camera_video</button>
+            <button class="material-symbols-outlined selected" onclick="window.location.href = '/ri3d26/manager'">wall_art</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/documents'">files</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/schedule'">avg_time</button>
+            <button class="material-symbols-outlined" onclick="window.location.href = '/ri3d26/livestream'">preview</button>
+        </div>
+        <div class="center-module" style="display:block">
+            <div class="container across-screen">
+                <div class="flex-apart" style="margin-bottom: 20px;">
+                    <div>
+                        <h2>Status Indicator</h3>
+                        <span>Provides a live view of what's going on</span>
+                    </div>
+                    
+                    <div class="status-indicator" name="ri3d-socket-connected"></div>
+
+
+
+                </div>
+                <div class="flex-apart comfort-margin-top-bottom">
+                    <h3>Add Camera to Target</h3>
+                    <div>
+                        <div class="flex-center">
+                            <select class="camera_list" name="target_camera_select">
+                                <option value="3123123">Camera 1</option>
+                                <option value="Camera 2">Camera 2</option>
+                                <option value="Camera 3">Camera 3</option>
+                                <option value="Camera 4">Camera 4</option>
+                            </select>
+                            <button onclick="addTargetCamera(event)" class="bg-secondary small-button material-symbols-outlined">add</button>
+
+                        </div>
+                        <div name="targetCameras">
+
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+            <div class="container across-screen bg-success" name="microphoneStatus">
+                <div class="flex-apart">
+                    <span name="muted-text" style="font-size: 40px">Microphone Muted</span>
+                <button class="bg-background small-button" style="display: flex;align-items: center;" disabled>Ask Stream Managers to Unmute<span class="material-symbols-outlined">add</span></button>
+                </div>
+                
+                
+            </div>
+            <div class="container across-screen bg-success" name="cameraStatus">
+                <div class="flex-apart">
+                    <span name="camera-text" style="font-size: 40px">Camera Inactive</span>
+                </div>
+                
+                
+            </div>
+        </div>
+    </body>
+    <script>
+
+
+        const socket = io(window.location.host, {
+            path: "/ri3d26/socket.io"
+        });
+
+        let camerasToTarget = [];
+
+        let globalState = {
+            availableCameras: [],
+            activeSceneRequest: null
+        };
+
+        let targetCameraTemplate = `
+        <div class="flex-apart" style="align-items: center;">
+                                    <span>CAMERA_NAME</span>
+                                    <button style="margin-top: 5px;" onclick="removeTargetCamera('CAMERA_ID')" class="bg-secondary small-button tiny-label material-symbols-outlined">close</button>
+                                </div>`
+
+
+        function readFromUrlParams(){
+            let urlParams = new URLSearchParams(window.location.search);
+            let targetCamerasParam = urlParams.get("targetCameras");
+            if(targetCamerasParam){
+                camerasToTarget = targetCamerasParam.split(",");
+                updateTargetCamerasView();
+            }
+        }
+
+        window.onload = function(){
+            readFromUrlParams();
+        }
+
+        function checkSceneRequest(){
+            if(!globalState.activeSceneRequest){
+                setCameraStatus(false);
+                return;
+            } 
+
+            let cameras = globalState.activeSceneRequest.cameras;
+            // see if the active scene request has any of the cameras we're targeting
+
+            let isActive = cameras.some((camId) => camerasToTarget.includes(camId));
+            setCameraStatus(isActive);
+        }
+
+        function setCameraStatus(isActive){
+            let cameraStatusDiv = document.getElementsByName("cameraStatus")[0];
+            let cameraText = document.getElementsByName("camera-text")[0];
+            if(isActive){
+                cameraStatusDiv.classList = "container across-screen bg-error";
+                cameraText.innerText = "Camera Active - You are LIVE!";
+            } else {
+                cameraStatusDiv.classList = "container across-screen bg-success";
+                cameraText.innerText = "Camera Inactive";
+            }
+        }
+                                
+
+        function updateTargetCamerasView(){
+            let targetCamerasDiv = document.getElementsByName("targetCameras")[0];
+            targetCamerasDiv.innerHTML = "";
+
+            camerasToTarget.forEach((camId) => {
+                let camInfo = globalState.availableCameras.find((cam) => cam.id == camId);
+                if(camInfo){
+                    let newCameraDiv = document.createElement("div");
+                    newCameraDiv.classList = "container bg-primary";
+                    newCameraDiv.style.padding = "3px 10px";
+                    newCameraDiv.style.marginTop = "5px";
+                    let camTemplate = targetCameraTemplate.replace("CAMERA_NAME", camInfo.name).replaceAll("CAMERA_ID", camInfo.id);
+                    newCameraDiv.innerHTML = camTemplate;
+                    targetCamerasDiv.appendChild(newCameraDiv);
+                }
+            });
+
+            // also encode inside the URL so if we refresh we don't lose our place
+            let url = new URL(window.location);
+            url.searchParams.set("targetCameras", camerasToTarget.join(","));
+            window.history.pushState({}, "", url);
+        }
+
+        function addTargetCamera(event){
+            let cameraSelect = document.getElementsByName("target_camera_select")[0];
+            let cameraId = cameraSelect.value;
+
+            if(!camerasToTarget.includes(cameraId)){
+                camerasToTarget.push(cameraId);
+                updateTargetCamerasView();
+            }
+        }
+
+        function removeTargetCamera(cameraId){
+            camerasToTarget = camerasToTarget.filter((id) => id != cameraId);
+            updateTargetCamerasView();
+        }
+
+        function updateAvailableCameras(){
+            let cameraSelect = document.getElementsByName("target_camera_select")[0];
+            // clear current options
+            cameraSelect.innerHTML = "";
+            // add new options (cam.id, cam.name, cam.url)
+            globalState.availableCameras.forEach((cam) => {
+                let option = document.createElement("option");
+                option.value = cam.id;
+                option.text = cam.name;
+                cameraSelect.appendChild(option);
+            });
+
+            // then also go through and remove any cameras from the target list that are no longer available
+            let nonActiveCameras = camerasToTarget.filter((camId) => !globalState.availableCameras.some((cam) => cam.id == camId));
+            if(nonActiveCameras.length > 0){
+                camerasToTarget = camerasToTarget.filter((camId) => globalState.availableCameras.some((cam) => cam.id == camId));
+            }
+            updateTargetCamerasView();
+
+        }
+
+
+        function changeStatusIndicator(indicatorElementName, isConnected) {
+            let indicatorElement = document.getElementsByName(indicatorElementName)[0];
+            if (isConnected) {
+                indicatorElement.style.backgroundColor = "var(--success-color)";
+            } else {
+                indicatorElement.style.backgroundColor = "var(--error-color)";
+            }
+        }
+
+        socket.on('connect', () => {
+            changeStatusIndicator("ri3d-socket-connected", true);
+        });
+
+        socket.on('disconnect', () => {
+            changeStatusIndicator("ri3d-socket-connected", false);
+        });
+
+        function reactToDataChange(group, key, value){
+            if(group == "camera" && key == "configured"){
+                globalState.availableCameras = value;
+                updateAvailableCameras();
+                checkSceneRequest();
+            }else if(group == "camera" && key == "activeSceneRequest"){
+                globalState.activeSceneRequest = value;
+                checkSceneRequest();
+            }
+        }
+        
+
+        socket.on("dataUpdated", (group, key, value) => {
+            reactToDataChange(group, key, value);
+        });
+
+        socket.on("entireConfig", (config) => {
+            let cameras = config.camera.configured;
+            globalState.availableCameras = cameras;
+            updateAvailableCameras();
+
+            let activeSceneRequest = config.camera.activeSceneRequest;
+            globalState.activeSceneRequest = activeSceneRequest;
+            checkSceneRequest();
+            
+        });
+    </script>
+</html>
+

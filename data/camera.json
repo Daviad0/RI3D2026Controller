@@ -1,5 +1,5 @@
 {
-  "playTransition": 122,
+  "playTransition": 124,
   "available": [
     "ITCam1",
     "ITCam2"
@@ -11,10 +11,10 @@
       "id": "320577a4",
       "name": "Camera 1",
       "url": "http://streamingwebcams.mtu.edu:1935/rtplive/camera051-high.stream/playlist.m3u8",
-      "x": 0,
-      "y": 0,
-      "width": "1",
-      "height": "1",
+      "x": "70",
+      "y": "50",
+      "width": ".9",
+      "height": ".9",
       "type": "media"
     },
     {
@@ -30,26 +30,26 @@
     {
       "id": "f8c2310e",
       "name": "Camera 3",
-      "url": "",
-      "x": 0,
-      "y": 0,
-      "width": 1920,
-      "height": 1080,
-      "type": "unknown"
+      "url": "https://streamingwebcams.mtu.edu:1935/rtplive/camera016.stream/playlist.m3u8",
+      "x": "70",
+      "y": "50",
+      "width": ".9",
+      "height": ".9",
+      "type": "media"
     }
   ],
   "livePreview": {
-    "id": "627b3eee",
+    "id": "f8c2310e",
     "preview": "off"
   },
   "sceneRequest": {
     "scene": "Passive",
     "cameras": [
-      "320577a4"
+      "f8c2310e"
     ]
   },
   "activeSceneRequest": {
-    "scene": "Present",
+    "scene": "Passive",
     "cameras": [
       "320577a4"
     ]
