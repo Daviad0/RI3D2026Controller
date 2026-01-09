@@ -45,6 +45,7 @@
                         <button onclick="selectMultiButton(event)" name="reqStage" value="panel-open" class="multi-button bg-secondary">Bar-Open</button>
                         <button onclick="selectMultiButton(event)" name="reqStage" value="panel-closed" class="multi-button bg-secondary">Bar-Closed</button>
                         <button onclick="selectMultiButton(event)" name="reqStage" value="panel-enlarged" class="multi-button bg-secondary">Large Panel</button>
+                        <button onclick="selectMultiButton(event)" name="reqStage" value="panel-active" class="multi-button bg-secondary">Active Panel</button>
                     </div>
                 </div>
                 <div class="flex-apart comfort-margin-top-bottom">
@@ -101,7 +102,7 @@
 
                 let workingStageName = stage;
 
-                if(stage != "panel-enlarged"){
+                if(stage != "panel-enlarged" && stage != "panel-active"){
                     if(sound == "muted"){
                         workingStageName += "-muted";
                     }

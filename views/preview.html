@@ -158,11 +158,13 @@
                 camerasToTarget.push(cameraId);
                 updateTargetCamerasView();
             }
+            checkSceneRequest();
         }
 
         function removeTargetCamera(cameraId){
             camerasToTarget = camerasToTarget.filter((id) => id != cameraId);
             updateTargetCamerasView();
+            checkSceneRequest();
         }
 
         function updateAvailableCameras(){
