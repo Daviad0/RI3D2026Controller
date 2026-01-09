@@ -104,34 +104,100 @@
 
 <script>
 
+    const socket = io(window.location.host, {
+        path: "/ri3d26/socket.io"
+    });
     
 
     function loop_master(){
         loop_updateTimer();
     }
 
+    let localStateInformation = {
+        timer: {
+            mode: "disabled", // countdown, time, disabled
+            targetTime: null
+        }
+    };
+
 
     function loop_updateTimer(){
         let timerElement = document.getElementById("timer");
         let now = new Date().getTime();
-        let destination = new Date("June 1, 2026 12:00:00").getTime();
 
-        let distance = destination - now;
-        if(distance < 0){
-            timerElement.innerText = "00:00:00";
-            return;
+        // check by mode... if countdown, show time remaining
+        if(localStateInformation.timer.mode == "countdown"){
+            timerElement.style.fontSize = "";
+            let distance = localStateInformation.timer.targetTime - now;
+            if(distance < 0){
+                timerElement.innerText = "00:00:00";
+                return;
+            }
+
+            // show max of 99 hours (anything more will just show as ++:xx:xx)
+            // if distance > 99 hours, then show ++:xx:xx
+            if(distance > 99 * 60 * 60 * 1000){
+                timerElement.innerText = "TooLong";
+                return;
+            }
+
+            let hours = Math.floor((distance % (100 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            let minutes = Math.floor((distance % (60 * 60 * 1000)) / (60 * 1000));
+            let seconds = Math.floor((distance % (60 * 1000)) / 1000);
+
+            timerElement.innerText = 
+                (hours < 10 ? "0" + hours : hours) + ":" + 
+                (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+                (seconds < 10 ? "0" + seconds : seconds);
+        }else if(localStateInformation.timer.mode == "time"){
+            timerElement.style.fontSize = "";
+            let currentDate = new Date(now);
+            let hours = currentDate.getHours();
+            let minutes = currentDate.getMinutes();
+            let seconds = currentDate.getSeconds();
+
+            // show in 12-hour format
+            hours = hours % 12;
+            if(hours == 0) hours = 12; // show 12 instead of 0
+
+            let amorpm = currentDate.getHours() >= 12 ? "PM" : "AM";
+
+            timerElement.innerText = 
+                (hours < 10 ? "0" + hours : hours) + ":" + 
+                (minutes < 10 ? "0" + minutes : minutes) + "" + 
+                amorpm;
+        }else if(localStateInformation.timer.mode == "disabled"){
+            timerElement.innerText = "RI3D@MTU";
+            timerElement.style.fontSize = "7vw";
         }
-
-        let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        timerElement.innerText = 
-            (hours < 10 ? "0" + hours : hours) + ":" + 
-            (minutes < 10 ? "0" + minutes : minutes) + ":" + 
-            (seconds < 10 ? "0" + seconds : seconds);
         
     }
+
+    socket.on("entireConfig", (config) => {
+
+        let clockMode = config.constants.clockMode;
+        localStateInformation.timer.mode = clockMode;
+
+        let countdownTarget = config.constants.countdownTarget;
+        if(countdownTarget){
+            localStateInformation.timer.targetTime = new Date(countdownTarget).getTime();
+        }
+        
+    })
+
+    socket.on("dataUpdated", (group, key, value) => {
+        if(group == "constants"){
+            if(key == "clockMode"){
+                localStateInformation.timer.mode = value;
+            }else if(key == "countdownTarget"){
+                if(value){
+                    localStateInformation.timer.targetTime = new Date(value).getTime();
+                }
+            }
+        }
+    });
+
+
 
    
     setInterval(loop_master, 200);
